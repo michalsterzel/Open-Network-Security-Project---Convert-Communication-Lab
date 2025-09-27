@@ -36,6 +36,21 @@ vagrant up
 vagrant ssh
 ```
 
+## Automated Setup Scripts
+
+For easier setup, you can use the provided scripts:
+
+### Windows
+```batch
+dns-setup-windows.bat
+```
+
+### Linux/macOS
+```bash
+chmod +x dns-setup-linux.sh
+./dns-setup-linux.sh
+```
+
 ## VM Configuration
 - **OS**: Kali Linux Rolling
 - **Memory**: 4GB
