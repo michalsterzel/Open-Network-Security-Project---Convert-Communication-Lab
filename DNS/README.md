@@ -1,43 +1,43 @@
-Step 1:
-(Get-Content Vagrantfile) -replace 'config.vm.box = "base"', 'config.vm.box = "kalilinux/rolling"' | Set-Content Vagrantfile
+﻿# Vagrant DNS Lab Setup
 
-Step 2:
-(Get-Content Vagrantfile) -replace '  # vb.memory = "1024"', '  vb.memory = "4096"' | Set-Content Vagrantfile
-(Get-Content Vagrantfile) -replace '  # vb.cpus = 2', '  vb.cpus = 4' | Set-Content Vagrantfile
+## Prerequisites
+- Vagrant installed
+- VirtualBox installed
 
+## Quick Setup
 
-Step 3:
-Uncomment the VirtualBox provider section in Vagrantfile:
-Modify the amount of memory for the VM to 4 GB (4096 MB):
-(Get-Content Vagrantfile) -replace 'vb.memory = "1024"', 'vb.memory = "4096"' | Set-Content Vagrantfile
+### 1. Configure Vagrant Box
+```powershell
+vagrant init
+(Get-Content Vagrantfile) -replace 'config.vm.box = "base"', 'config.vm.box = "kalilinux/rolling"' | Set-Content Vagrantfile
+```
 
-This command updates the VM memory setting in the Vagrantfile to 4096 MB (4 GB).
+### 2. Configure VirtualBox Provider
+```powershell
+# Uncomment the VirtualBox provider section
+(Get-Content Vagrantfile) -replace '  # config.vm.provider "virtualbox" do \|vb\|', '  config.vm.provider "virtualbox" do |vb|' | Set-Content Vagrantfile
 
-Set the number of CPUs for the VM to 2:
-(Get-Content Vagrantfile) -replace 'vb.cpus = [0-9]+', 'vb.cpus = 2' | Set-Content Vagrantfile
+# Uncomment and enable GUI
+(Get-Content Vagrantfile) -replace '  #   vb.gui = true', '    vb.gui = true' | Set-Content Vagrantfile
 
-This command sets the VM CPUs to 2 in the Vagrantfile.
-(Get-Content Vagrantfile) | ForEach-Object {
-	if ($_ -match '^\s*#\s?config\.vm\.provider "virtualbox" do \|vb\|' -or
-		$_ -match '^\s*#\s{3}# Display the VirtualBox GUI when booting the machine' -or
-		$_ -match '^\s*#\s{3}vb\.gui = true' -or
-		$_ -match '^\s*#\s*$' -or
-		$_ -match '^\s*#\s{3}# Customize the amount of memory on the VM:' -or
-		$_ -match '^\s*#\s{3}vb\.memory = "1024"' -or
-		$_ -match '^\s*#\s{3}end') {
-		$_ -replace '^\s*#\s?', ''
-	} else {
-		$_
-	}
-} | Set-Content Vagrantfile
+# Uncomment and set memory to 4GB
+(Get-Content Vagrantfile) -replace '  #   vb.memory = "1024"', '    vb.memory = "4096"' | Set-Content Vagrantfile
 
-This command will only uncomment the lines in the VirtualBox provider section.
+# Add CPU configuration
+(Get-Content Vagrantfile) -replace '    vb.memory = "4096"', "    vb.memory = `"4096`"`r`n    vb.cpus = 2" | Set-Content Vagrantfile
 
-Uncomment the 'end' clause in Vagrantfile:
-(Get-Content Vagrantfile) -replace '^\s*#\s*end', 'end' | Set-Content Vagrantfile
+# Uncomment the end statement
+(Get-Content Vagrantfile) -replace '  # end', '  end' | Set-Content Vagrantfile
+```
 
-This command will uncomment any line that starts with '# end'.
+### 3. Start VM
+```powershell
+vagrant up
+vagrant ssh
+```
 
-
-
-
+## VM Configuration
+- **OS**: Kali Linux Rolling
+- **Memory**: 4GB
+- **CPUs**: 2 cores  
+- **GUI**: Enabled
