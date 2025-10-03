@@ -31,8 +31,8 @@ A complete DNS security lab environment with three virtual machines for learning
 | VM | Role | IP Address | Resources |
 |---|---|---|---|
 | **DNS Server** | DNS server with security monitoring | 192.168.10.1 (static) | 4GB RAM, 2 CPUs |
-| **Agent** | Client machine for testing | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
-| **Detective** | Security analysis workstation | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
+| **Agent** | Agent machine for covert communications | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
+| **Detective** | Detective machine for detecting covert communication | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
 
 ## Network Architecture
 
