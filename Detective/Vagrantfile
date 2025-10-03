@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
     vb.cpus = 2
     
     # Set VM name
-    vb.name = "detective-vm"
+    vb.name = "lab-detective-vm"
   end
   
   # Provisioning script to configure the detective

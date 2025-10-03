@@ -33,7 +33,7 @@ Vagrant.configure("2") do |config|
     vb.cpus = 2
     
     # Set VM name
-    vb.name = "agent-vm"
+    vb.name = "lab-agent-vm"
   end
   
   # Provisioning script to configure the agent

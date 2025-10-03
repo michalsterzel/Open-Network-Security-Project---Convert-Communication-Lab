@@ -8,6 +8,19 @@ echo 1. DNS Server (192.168.10.1)
 echo 2. Agent (DHCP)
 echo 3. Detective (DHCP)
 echo.
+echo Checking for existing lab VMs and cleaning up if needed...
+
+REM Clean up any existing lab VMs to avoid conflicts
+cd DNS
+vagrant destroy -f >nul 2>&1
+cd ..\Agent
+vagrant destroy -f >nul 2>&1
+cd ..\Detective
+vagrant destroy -f >nul 2>&1
+cd ..
+
+echo Cleanup complete. Starting fresh lab setup...
+echo.
 pause
 
 echo.

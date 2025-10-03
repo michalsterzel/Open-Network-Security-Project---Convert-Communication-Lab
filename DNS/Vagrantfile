@@ -19,5 +19,8 @@ Vagrant.configure("2") do |config|
     # Customize the amount of memory on the VM:
     vb.memory = "4096"
     vb.cpus = 2
+    
+    # Set VM name
+    vb.name = "lab-dns-server"
   end
 end 
