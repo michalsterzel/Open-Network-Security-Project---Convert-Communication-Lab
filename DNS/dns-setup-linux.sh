@@ -22,11 +22,11 @@ sed -i 's/config.vm.box = "base"/config.vm.box = "open_network_security\/dns_ser
 
 # Set box version
 echo "Step 4: Setting box version..."
-sed -i '/config.vm.box = "open_network_security\/dns_server"/a\  config.vm.box_version = "1.0.0"' Vagrantfile
+sed -i '/config.vm.box = "open_network_security\/dns_server"/a\  config.vm.box_version = "1.1.0"' Vagrantfile
 
 # Configure internal network
 echo "Step 5: Configuring internal network..."
-sed -i '/config.vm.box_version = "1.0.0"/a\\n  # Set up Internal Network for isolated VM-to-VM communication (VirtualBox specific)\n  # Assign a static IP address for this VM on the internal network\n  config.vm.network "private_network", ip: "192.168.10.1", virtualbox__intnet: "labnet"' Vagrantfile
+sed -i '/config.vm.box_version = "1.1.0"/a\\n  # Set up Internal Network for isolated VM-to-VM communication (VirtualBox specific)\n  # Assign a static IP address for this VM on the internal network\n  config.vm.network "private_network", ip: "192.168.10.1", virtualbox__intnet: "labnet"' Vagrantfile
 
 # Configure VirtualBox Provider
 echo "Step 6: Configuring VirtualBox provider..."
