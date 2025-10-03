@@ -1,4 +1,4 @@
-﻿# Vagrant DNS Lab Setup
+﻿# DNS Server Lab
 
 ## Prerequisites
 - Vagrant installed
@@ -6,28 +6,18 @@
 
 ## Quick Setup
 
-Run the appropriate setup script for your operating system:
-
-### Windows
-```batch
-dns-setup-windows.bat
-```
-
-### Linux/macOS
 ```bash
-chmod +x dns-setup-linux.sh
-./dns-setup-linux.sh
+vagrant up
 ```
 
-These scripts will automatically:
-- Initialize Vagrant
-- Configure Kali Linux as the base OS
-- Set up VirtualBox with 4GB RAM and 2 CPU cores
-- Enable GUI mode
-- Start the VM
+## VM Configuration
+- **OS**: DNS Server (open_network_security/dns_server v1.0.0)
+- **Memory**: 4GB
+- **CPUs**: 2 cores
+- **Network**: Internal network (192.168.10.1)
+- **GUI**: Enabled
 
 ## Connecting to the VM
-After the setup completes, connect using:
 ```bash
 vagrant ssh
 ```
