@@ -7,14 +7,19 @@ Vagrant.configure("2") do |config|
   config.vm.box = "open_network_security/dns_server"
   config.vm.box_version = "1.0.0"
   
+  # SSH Configuration for automatic authentication
+  config.ssh.username = "vagrant"
+  config.ssh.password = "vagrant"
+  config.ssh.insert_key = false
+  
   # Set up Internal Network for isolated VM-to-VM communication (VirtualBox specific)
   # Assign a static IP address for this VM on the internal network
   config.vm.network "private_network", ip: "192.168.10.1", virtualbox__intnet: "labnet"
   
   # VirtualBox provider configuration
   config.vm.provider "virtualbox" do |vb|
-    # Display the VirtualBox GUI when booting the machine
-    vb.gui = true
+    # Run headless (no GUI) for automated setup
+    vb.gui = false
     
     # Customize the amount of memory on the VM:
     vb.memory = "4096"
