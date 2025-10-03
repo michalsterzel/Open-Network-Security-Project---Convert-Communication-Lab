@@ -1,0 +1,69 @@
+#!/bin/bash
+
+echo "========================================"
+echo " Open Network Security Lab Launcher"
+echo "========================================"
+echo
+echo "This script will launch all three VMs in the correct order:"
+echo "1. DNS Server (192.168.10.1)"
+echo "2. Agent (DHCP)"
+echo "3. Detective (DHCP)"
+echo
+read -p "Press Enter to continue..."
+
+echo
+echo "========================================"
+echo " Step 1: Starting DNS Server..."
+echo "========================================"
+cd DNS
+echo "Current directory: $(pwd)"
+vagrant up
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to start DNS Server"
+    exit 1
+fi
+echo "DNS Server started successfully!"
+echo
+
+echo "========================================"
+echo " Step 2: Starting Agent VM..."
+echo "========================================"
+cd ../Agent
+echo "Current directory: $(pwd)"
+vagrant up
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to start Agent VM"
+    exit 1
+fi
+echo "Agent VM started successfully!"
+echo
+
+echo "========================================"
+echo " Step 3: Starting Detective VM..."
+echo "========================================"
+cd ../Detective
+echo "Current directory: $(pwd)"
+vagrant up
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to start Detective VM"
+    exit 1
+fi
+echo "Detective VM started successfully!"
+echo
+
+cd ..
+echo "========================================"
+echo " Lab Setup Complete!"
+echo "========================================"
+echo
+echo "All VMs are now running:"
+echo "- DNS Server: 192.168.10.1"
+echo "- Agent: Check IP with 'vagrant ssh' then 'ip addr'"
+echo "- Detective: Check IP with 'vagrant ssh' then 'ip addr'"
+echo
+echo "To connect to a VM:"
+echo "  cd [VM_folder] && vagrant ssh"
+echo
+echo "To stop all VMs:"
+echo "  ./shutdown-lab.sh"
+echo
