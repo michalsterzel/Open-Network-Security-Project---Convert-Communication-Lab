@@ -23,6 +23,16 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 echo DNS Server started successfully!
+
+echo.
+echo Reloading DNS Server to initialize DNS-DHCP services...
+vagrant reload
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Failed to reload DNS Server
+    pause
+    exit /b 1
+)
+echo DNS Server reloaded and services initialized!
 echo.
 
 echo ========================================

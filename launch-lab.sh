@@ -23,6 +23,15 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 echo "DNS Server started successfully!"
+
+echo
+echo "Reloading DNS Server to initialize DNS-DHCP services..."
+vagrant reload
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to reload DNS Server"
+    exit 1
+fi
+echo "DNS Server reloaded and services initialized!"
 echo
 
 echo "========================================"

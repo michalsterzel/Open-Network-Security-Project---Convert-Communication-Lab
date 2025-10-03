@@ -21,7 +21,7 @@ A complete DNS security lab environment with three virtual machines for learning
 3. **Manual Setup (Alternative)**
    ```bash
    # Start VMs individually in order
-   cd DNS && vagrant up
+   cd DNS && vagrant up && vagrant reload  # Reload needed for DNS-DHCP
    cd ../Agent && vagrant up
    cd ../Detective && vagrant up
    ```
@@ -40,6 +40,8 @@ All VMs are connected to an isolated internal network (`labnet`) for secure test
 - DNS Server provides DNS services and DHCP
 - Agent and Detective get IP addresses via DHCP
 - All communication stays within the isolated network
+
+**Note**: The DNS server requires a reload after initial startup to properly initialize the DNS-DHCP services. The launch script handles this automatically.
 
 ## Usage
 
