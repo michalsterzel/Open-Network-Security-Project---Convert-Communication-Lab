@@ -23,6 +23,7 @@ cat > Vagrantfile << 'EOF'
 Vagrant.configure("2") do |config|
   # Base box for the agent
   config.vm.box = "open_network_security/agent"
+  config.vm.box_version = "0.1.0"
 
   # Disable default synced folder for better isolation
   config.vm.synced_folder ".", "/vagrant", disabled: true
