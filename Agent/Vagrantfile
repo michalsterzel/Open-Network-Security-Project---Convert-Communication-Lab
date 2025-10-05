@@ -4,8 +4,9 @@
 # Agent VM Configuration
 # This VM connects to the internal network of the DNS server
 Vagrant.configure("2") do |config|
-  # Base box for the agent - using standard Ubuntu for reliability
-  config.vm.box = "ubuntu/jammy64"
+  # Base box for the agent
+  config.vm.box = "open_network_security/agent"
+  config.vm.box_version = "0.1.0"
   
   # SSH Configuration - standard for Ubuntu boxes
   config.ssh.insert_key = true
@@ -35,8 +36,8 @@ Vagrant.configure("2") do |config|
     # Set the number of CPUs on the VM
     vb.cpus = 2
     
-    # Set VM name
-    vb.name = "lab-agent-vm"
+    # Set VM name with timestamp to avoid conflicts
+    vb.name = "agent-vm-#{Time.now.to_i}"
   end
   
   # Provisioning script to configure the agent
