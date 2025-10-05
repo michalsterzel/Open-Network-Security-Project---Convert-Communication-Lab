@@ -28,11 +28,11 @@ A complete DNS security lab environment with three virtual machines for learning
 
 ## Lab Components
 
-| VM | Role | IP Address | Resources |
-|---|---|---|---|
-| **DNS Server** | DNS server with security monitoring | 192.168.10.1 (static) | 4GB RAM, 2 CPUs |
-| **Agent** | Agent machine for covert communications | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
-| **Detective** | Detective machine for detecting covert communication | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
+| VM | Role | Base Box | IP Address | Resources |
+|---|---|---|---|---|
+| **DNS Server** | DNS server with security monitoring | `open_network_security/dns_server` | 192.168.10.1 (static) | 4GB RAM, 2 CPUs |
+| **Agent** | Agent machine for covert communications | `ubuntu/jammy64` | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
+| **Detective** | Detective machine for detecting covert communication | `ubuntu/jammy64` | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
 
 ## Network Architecture
 
