@@ -1,33 +1,28 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Detective VM Configuration
+# Agent VM Configuration (Using Standard Ubuntu Box)
 # This VM connects to the internal network of the DNS server
 Vagrant.configure("2") do |config|
-  # Base box for the detective
-  config.vm.box = "open_network_security/detective"
-  config.vm.box_version = "0.1.0"
+  # Alternative: Use standard Ubuntu box if custom box has issues
+  config.vm.box = "ubuntu/jammy64"
   
-  # SSH Configuration - try multiple authentication methods
-  config.ssh.username = "vagrant"
-  config.ssh.password = "vagrant"
-  config.ssh.keys_only = false
-  config.ssh.paranoid = false
-  config.ssh.insert_key = false
+  # SSH Configuration - standard Ubuntu box settings
+  config.ssh.insert_key = true
   config.vm.boot_timeout = 600  # Increase timeout to 10 minutes
   
   # Disable default synced folder for better isolation
   config.vm.synced_folder ".", "/vagrant", disabled: true
   
   # Connect to the same internal network as the DNS server
-  # This will put the detective on the same network as the DNS server (192.168.10.1)
-  # The detective will get an IP from the DHCP server (192.168.10.3-192.168.10.100)
+  # This will put the agent on the same network as the DNS server (192.168.10.1)
+  # The agent will get an IP from the DHCP server (192.168.10.3-192.168.10.100)
   config.vm.network "private_network", 
                     type: "dhcp", 
                     virtualbox__intnet: "labnet"
   
   # Alternative: Assign a static IP if you prefer (uncomment the line below and comment the DHCP line above)
-  # config.vm.network "private_network", ip: "192.168.10.11", virtualbox__intnet: "labnet"
+  # config.vm.network "private_network", ip: "192.168.10.10", virtualbox__intnet: "labnet"
   
   # VirtualBox provider configuration
   config.vm.provider "virtualbox" do |vb|
@@ -41,10 +36,10 @@ Vagrant.configure("2") do |config|
     vb.cpus = 2
     
     # Set VM name
-    vb.name = "lab-detective-vm"
+    vb.name = "lab-agent-vm"
   end
   
-  # Provisioning script to configure the detective
+  # Provisioning script to configure the agent
   config.vm.provision "shell", inline: <<-SHELL
     # Update system
     apt-get update
@@ -68,6 +63,6 @@ Vagrant.configure("2") do |config|
     echo "=== Testing DNS Resolution ==="
     nslookup google.com 192.168.10.1 || echo "DNS server not yet available"
     
-    echo "Detective VM setup complete!"
+    echo "Agent VM setup complete!"
   SHELL
 end

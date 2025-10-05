@@ -8,8 +8,12 @@ Vagrant.configure("2") do |config|
   config.vm.box = "open_network_security/agent"
   config.vm.box_version = "0.1.0"
   
-  # SSH Configuration - let Vagrant handle key-based auth automatically
-  config.ssh.insert_key = true
+  # SSH Configuration - try multiple authentication methods
+  config.ssh.username = "vagrant"
+  config.ssh.password = "vagrant"
+  config.ssh.keys_only = false
+  config.ssh.paranoid = false
+  config.ssh.insert_key = false
   config.vm.boot_timeout = 600  # Increase timeout to 10 minutes
   
   # Disable default synced folder for better isolation
