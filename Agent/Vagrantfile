@@ -4,16 +4,11 @@
 # Agent VM Configuration
 # This VM connects to the internal network of the DNS server
 Vagrant.configure("2") do |config|
-  # Base box for the agent
-  config.vm.box = "open_network_security/agent"
-  config.vm.box_version = "0.1.0"
+  # Base box for the agent - using standard Ubuntu for reliability
+  config.vm.box = "ubuntu/jammy64"
   
-  # SSH Configuration - try multiple authentication methods
-  config.ssh.username = "vagrant"
-  config.ssh.password = "vagrant"
-  config.ssh.keys_only = false
-  config.ssh.paranoid = false
-  config.ssh.insert_key = false
+  # SSH Configuration - standard for Ubuntu boxes
+  config.ssh.insert_key = true
   config.vm.boot_timeout = 600  # Increase timeout to 10 minutes
   
   # Disable default synced folder for better isolation
