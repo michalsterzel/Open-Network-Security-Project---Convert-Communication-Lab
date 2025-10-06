@@ -40,8 +40,8 @@ Vagrant.configure("2") do |config|
     # Set the number of CPUs on the VM
     vb.cpus = 2
     
-    # Set VM name with timestamp to avoid conflicts
-    vb.name = "agent-vm-#{Time.now.to_i}"
+    # Set VM name to avoid conflicts with orphaned VMs
+    vb.name = "open-net-agent"
   end
   
   # Provisioning script to configure the agent
