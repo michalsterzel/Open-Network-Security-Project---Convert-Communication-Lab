@@ -6,32 +6,24 @@
 Vagrant.configure("2") do |config|
   # Base box for the detective
   config.vm.box = "open_network_security/detective"
-  config.vm.box_version = "0.1.0"
-  
-  # SSH Configuration - enhanced for custom boxes
-  config.ssh.username = "vagrant"
-  config.ssh.password = "vagrant"
-  config.ssh.keys_only = false
-  config.ssh.paranoid = false
-  config.ssh.insert_key = true
-  config.vm.boot_timeout = 900  # Increase timeout to 15 minutes for custom boxes
-  
+  # config.vm.box = "ubuntu/jammy64"
+
   # Disable default synced folder for better isolation
   config.vm.synced_folder ".", "/vagrant", disabled: true
-  
+
   # Connect to the same internal network as the DNS server
-  # This will put the detective on the same network as the DNS server (192.168.10.1)
-  # The detective will get an IP from the DHCP server (192.168.10.3-192.168.10.100)
+  # This will put the agent on the same network as the DNS server (192.168.10.1)
+  # The agent will get an IP from the DHCP server (192.168.10.3-192.168.10.100)
   config.vm.network "private_network", 
                     type: "dhcp", 
                     virtualbox__intnet: "labnet"
-  
+
   # Alternative: Assign a static IP if you prefer (uncomment the line below and comment the DHCP line above)
-  # config.vm.network "private_network", ip: "192.168.10.11", virtualbox__intnet: "labnet"
-  
+  # config.vm.network "private_network", ip: "192.168.10.10", virtualbox__intnet: "labnet"
+
   # VirtualBox provider configuration
   config.vm.provider "virtualbox" do |vb|
-    # Run headless (no GUI) for automated setup
+    # Display the VirtualBox GUI when booting the machine
     vb.gui = false
     
     # Customize the amount of memory on the VM
@@ -40,26 +32,13 @@ Vagrant.configure("2") do |config|
     # Set the number of CPUs on the VM
     vb.cpus = 2
     
-    # Set VM name to avoid conflicts with orphaned VMs
-    vb.name = "open-net-detective"
+    # Set VM name
+    vb.name = "detective-vm"
   end
-  
-  # Provisioning script to configure the detective
+
+  # Provisioning script to configure the agent
   config.vm.provision "shell", inline: <<-SHELL
-    # Update system
-    apt-get update
-    
-    # Install useful tools for network testing and debugging
-    apt-get install -y net-tools dnsutils curl wget nmap
-    
-    # Configure DNS to use our DNS server
-    # This will be set automatically via DHCP, but we can verify/override if needed
-    echo "nameserver 192.168.10.1" > /etc/resolv.conf
-    echo "search local" >> /etc/resolv.conf
-    
-    # Prevent NetworkManager from overriding resolv.conf
-    chattr +i /etc/resolv.conf
-    
+
     # Display network configuration
     echo "=== Network Configuration ==="
     ip addr show
