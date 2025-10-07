@@ -16,9 +16,22 @@ A complete DNS security lab environment with three virtual machines for learning
    # Start all three VMs in the correct order
    ./launch-lab.bat               # Windows
    ./launch-lab.sh                # Linux/macOS
+   
+   # Or with cleanup options
+   ./launch-lab.bat clean         # Windows - force clean start
+   ./launch-lab.bat noclean       # Windows - keep existing VMs
+   ./launch-lab.sh clean          # Linux/macOS - force clean start
+   ./launch-lab.sh noclean        # Linux/macOS - keep existing VMs
    ```
 
-3. **Manual Setup (Alternative)**
+3. **Shutdown All VMs**
+   ```bash
+   # Gracefully shutdown all VMs in reverse order
+   ./shutdown-lab.bat             # Windows
+   ./shutdown-lab.sh              # Linux/macOS
+   ```
+
+4. **Manual Setup (Alternative)**
    ```bash
    # Start VMs individually in order
    cd DNS && vagrant up && vagrant reload  # Reload needed for DNS-DHCP
@@ -31,8 +44,8 @@ A complete DNS security lab environment with three virtual machines for learning
 | VM | Role | Base Box | IP Address | Resources |
 |---|---|---|---|---|
 | **DNS Server** | DNS server with security monitoring | `open_network_security/dns_server` | 192.168.10.1 (static) | 4GB RAM, 2 CPUs |
-| **Agent** | Agent machine for covert communications | `ubuntu/jammy64` | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
-| **Detective** | Detective machine for detecting covert communication | `ubuntu/jammy64` | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
+| **Agent** | Agent machine for covert communications | `open_network_security/agent` | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
+| **Detective** | Detective machine for detecting covert communication | `open_network_security/detective` | DHCP (192.168.10.x) | 2GB RAM, 2 CPUs |
 
 ## Network Architecture
 
@@ -45,6 +58,11 @@ All VMs are connected to an isolated internal network (`labnet`) for secure test
 
 ## Usage
 
+### Lab Management
+- **Start Lab**: `./launch-lab.bat` (Windows) or `./launch-lab.sh` (Linux/macOS)
+- **Stop Lab**: `./shutdown-lab.bat` (Windows) or `./shutdown-lab.sh` (Linux/macOS)
+
+### Individual VM Management
 - **Connect to VMs**: `vagrant ssh` (from each VM's folder)
 - **Stop VMs**: `vagrant halt` (from each VM's folder)
 - **Destroy VMs**: `vagrant destroy` (from each VM's folder)
