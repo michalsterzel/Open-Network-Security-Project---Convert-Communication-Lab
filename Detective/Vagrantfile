@@ -4,9 +4,8 @@
 # Detective VM Configuration
 # This VM connects to the internal network of the DNS server
 Vagrant.configure("2") do |config|
-  # Base box for the detective
-  config.vm.box = "open_network_security/detective"
-  # config.vm.box = "ubuntu/jammy64"
+  # Base box for the detective - use official Ubuntu Jammy for simplicity
+  config.vm.box = "ubuntu/jammy64"
 
   # Disable default synced folder for better isolation
   config.vm.synced_folder ".", "/vagrant", disabled: true
@@ -37,16 +36,10 @@ Vagrant.configure("2") do |config|
   end
 
   # Provisioning script to configure the agent
-  config.vm.provision "shell", inline: <<-SHELL
-
-    # Display network configuration
-    echo "=== Network Configuration ==="
-    ip addr show
-    echo "=== DNS Configuration ==="
-    cat /etc/resolv.conf
-    echo "=== Testing DNS Resolution ==="
-    nslookup google.com 192.168.10.1 || echo "DNS server not yet available"
-    
-    echo "Detective VM setup complete!"
-  SHELL
+  # Provision Detective VM using Ansible to set resolver (mirrors Agent)
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "./detective-playbook.yml"
+    ansible.groups = { 'detective' => ['default'] }
+    # Use Vagrant-generated inventory (do not set inventory_path)
+  end
 end

@@ -3,14 +3,12 @@
 
 # DNS Server VM Configuration
 Vagrant.configure("2") do |config|
-  # DNS Server box
-  config.vm.box = "open_network_security/dns_server"
-  config.vm.box_version = "1.0.0"
+  # DNS Server box - use official Ubuntu Jammy box for simplicity and consistency
+  config.vm.box = "ubuntu/jammy64"
   
   # SSH Configuration for automatic authentication
   config.ssh.username = "vagrant"
-  config.ssh.password = "vagrant"
-  config.ssh.insert_key = false
+  config.ssh.insert_key = true
   
   # Set up Internal Network for isolated VM-to-VM communication (VirtualBox specific)
   # Assign a static IP address for this VM on the internal network
@@ -27,5 +25,15 @@ Vagrant.configure("2") do |config|
     
     # Set VM name to avoid conflicts with orphaned VMs
     vb.name = "open-net-dns-server"
+  end
+
+  # Provision DNS VM using Ansible from the host (runs the dnsmasq playbook)
+  # Requires Ansible installed on the host running Vagrant.
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "./DNS-playbook.yml"
+    # Use Vagrant-generated inventory so the correct SSH port/key are used.
+    # We expose a group named 'dns' that points to this VM.
+    ansible.groups = { 'dns' => ['default'] }
+    # Do NOT set ansible.inventory_path here — let Vagrant create the proper inventory
   end
 end 

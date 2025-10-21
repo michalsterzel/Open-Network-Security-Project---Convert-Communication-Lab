@@ -73,3 +73,18 @@ All VMs are connected to an isolated internal network (`labnet`) for secure test
 - VirtualBox 6.0+
 - 8GB+ RAM recommended
 - 20GB+ free disk space
+
+## Quick test
+
+After the lab is up you can quickly verify internal networking using the helper script `test-lab.sh` located at the repository root.
+
+What it checks:
+- Prints the DHCP-assigned internal IP for `Agent` and `Detective`.
+- Pings the DNS server at `192.168.10.1` from each VM to confirm connectivity.
+
+Run it like this:
+
+```bash
+chmod +x test-lab.sh
+./test-lab.sh
+```

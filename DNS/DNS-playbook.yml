@@ -1,0 +1,52 @@
+---
+- name: Configure DNS and DHCP with dnsmasq
+  hosts: dns
+  become: yes
+  tasks:
+    - name: Install dnsmasq
+      apt:
+        name: dnsmasq
+        state: present
+        update_cache: yes
+
+    - name: Stop systemd-resolved to free port 53 (if active)
+      systemd:
+        name: systemd-resolved
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    - name: Replace /etc/resolv.conf to avoid systemd-resolved stub resolver
+      file:
+        path: /etc/resolv.conf
+        state: absent
+      ignore_errors: yes
+
+    - name: Create a basic /etc/resolv.conf pointing to upstream resolver
+      copy:
+        dest: /etc/resolv.conf
+        content: |
+          nameserver 8.8.8.8
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Configure dnsmasq for DHCP and DNS
+      copy:
+        dest: /etc/dnsmasq.d/labnet.conf
+        content: |
+          # Provide DHCP range and DNS options for the internal lab network.
+          # Avoid referencing a specific interface name here to prevent 'unknown interface' during provisioning.
+          dhcp-range=192.168.10.3,192.168.10.100,12h
+          dhcp-option=3,192.168.10.1
+          dhcp-option=6,192.168.10.1
+
+    - name: Restart dnsmasq
+      systemd:
+        name: dnsmasq
+        state: restarted
+
+    - name: Wait for dnsmasq to be active
+      wait_for:
+        path: /run/dnsmasq/dnsmasq.pid
+        timeout: 10

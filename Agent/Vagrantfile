@@ -4,9 +4,8 @@
 # Agent VM Configuration
 # This VM connects to the internal network of the DNS server
 Vagrant.configure("2") do |config|
-  # Base box for the agent
-  config.vm.box = "open_network_security/agent"
-  # config.vm.box = "ubuntu/jammy64"
+  # Base box for the agent - use official Ubuntu Jammy for simplicity
+  config.vm.box = "ubuntu/jammy64"
 
   # Disable default synced folder for better isolation
   config.vm.synced_folder ".", "/vagrant", disabled: true
@@ -36,17 +35,12 @@ Vagrant.configure("2") do |config|
     vb.name = "agent-vm"
   end
 
-  # Provisioning script to configure the agent
-  config.vm.provision "shell", inline: <<-SHELL
-
-    # Display network configuration
-    echo "=== Network Configuration ==="
-    ip addr show
-    echo "=== DNS Configuration ==="
-    cat /etc/resolv.conf
-    echo "=== Testing DNS Resolution ==="
-    nslookup google.com 192.168.10.1 || echo "DNS server not yet available"
-    
-    echo "Agent VM setup complete!"
-  SHELL
+  # Provision Agent VM using Ansible on the host to set resolver
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "./agent-playbook.yml"
+    # Use Vagrant-generated inventory so the correct SSH port/key are used
+    # Ensure the generated inventory exposes a group named 'agent' pointing to this VM
+    ansible.groups = { 'agent' => ['default'] }
+    # Do NOT set ansible.inventory_path or ansible.limit here — let Vagrant handle inventory and limits
+  end
 end
