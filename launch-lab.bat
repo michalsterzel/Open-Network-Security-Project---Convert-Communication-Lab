@@ -4,8 +4,18 @@ REM Check for clean parameter
 set CLEAN_ENV=%1
 if "%CLEAN_ENV%"=="" set CLEAN_ENV=ask
 
-echo ========================================
-echo  Open Network Security Lab Launcher
+:cleanup_vbox_vm
+rem parameters are passed via %~1
+if "%~1"=="" goto :eof
+where VBoxManage >nul 2>&1
+if %ERRORLEVEL% neq 0 goto :eof
+for /f "usebackq tokens=*" %%G in (`VBoxManage list vms ^| findstr /i "\"%~1\""`) do (
+    echo Found existing VirtualBox VM named '%~1'. Attempting to power off and remove it to avoid conflicts...
+    VBoxManage controlvm "%~1" poweroff >nul 2>&1 || echo Poweroff attempt failed or VM not running
+    VBoxManage unregistervm "%~1" --delete >nul 2>&1 && echo Removed existing VM '%~1' || echo Warning: failed to unregister VM '%~1' (it may be locked or in use)
+)
+
+call :cleanup_vbox_vm "open-net-dns-server"
 echo ========================================
 echo.
 echo This script will launch all three VMs in the correct order:
@@ -88,6 +98,7 @@ echo  Step 2: Starting Agent VM...
 echo ========================================
 cd ..\Agent
 echo Current directory: %CD%
+call :cleanup_vbox_vm "agent-vm"
 vagrant up
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to start Agent VM
@@ -102,6 +113,7 @@ echo  Step 3: Starting Detective VM...
 echo ========================================
 cd ..\Detective
 echo Current directory: %CD%
+call :cleanup_vbox_vm "detective-vm"
 vagrant up
 if %ERRORLEVEL% neq 0 (
     echo ERROR: Failed to start Detective VM
