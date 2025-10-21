@@ -59,6 +59,30 @@ echo " Step 1: Starting DNS Server..."
 echo "========================================"
 cd DNS
 echo "Current directory: $(pwd)"
+
+# Helper: if a VirtualBox VM with given name exists, try to power it off and unregister it
+cleanup_vbox_vm() {
+    local vm_name="$1"
+    if ! command -v VBoxManage >/dev/null 2>&1; then
+        return 0
+    fi
+    # look for exact name match in VBoxManage list
+    if VBoxManage list vms | grep -q "\"${vm_name}\""; then
+        echo "Found existing VirtualBox VM named '${vm_name}'. Attempting to power off and remove it to avoid conflicts..."
+        # Best-effort poweroff, ignore errors
+        VBoxManage controlvm "${vm_name}" poweroff 2>/dev/null || true
+        # Unregister and delete files; ignore errors but report
+        if VBoxManage unregistervm "${vm_name}" --delete 2>/dev/null; then
+            echo "Removed existing VM '${vm_name}'."
+        else
+            echo "Warning: failed to unregister VM '${vm_name}' (it may be locked or in use)."
+            echo "You may need to stop VirtualBox or remove the VM manually: VBoxManage unregistervm \"${vm_name}\" --delete"
+        fi
+    fi
+}
+
+# Try to cleanup any stale VMs that would conflict
+cleanup_vbox_vm "open-net-dns-server"
 vagrant up
 if [ $? -ne 0 ]; then
     echo "ERROR: Failed to start DNS Server"
@@ -87,6 +111,7 @@ echo " Step 2: Starting Agent VM..."
 echo "========================================"
 cd ../Agent
 echo "Current directory: $(pwd)"
+cleanup_vbox_vm "agent-vm"
 vagrant up
 if [ $? -ne 0 ]; then
     echo "ERROR: Failed to start Agent VM"
@@ -100,6 +125,7 @@ echo " Step 3: Starting Detective VM..."
 echo "========================================"
 cd ../Detective
 echo "Current directory: $(pwd)"
+cleanup_vbox_vm "detective-vm"
 vagrant up
 if [ $? -ne 0 ]; then
     echo "ERROR: Failed to start Detective VM"

@@ -1,0 +1,7 @@
+vboxmanage controlvm "agent-vm" poweroff
+VBoxManage unregistervm "agent-vm" --delete
+vboxmanage controlvm "detective-vm" poweroff
+VBoxManage unregistervm "detective-vm" --delete
+vboxmanage controlvm "open-net-dns-server" poweroff
+VBoxManage unregistervm "open-net-dns-server" --delete
+
