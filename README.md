@@ -71,6 +71,7 @@ All VMs are connected to an isolated internal network (`labnet`) for secure test
 
 - Vagrant 2.0+
 - VirtualBox 6.0+
+- Ansible 2.9+ (required if you provision from the host using the included Ansible playbooks)
 - 8GB+ RAM recommended
 - 20GB+ free disk space
 

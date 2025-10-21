@@ -7,6 +7,7 @@ echo
 echo "This script will check and install:"
 echo "- Vagrant"
 echo "- VirtualBox"
+echo "- Ansible (optional: required if you provision from the host)"
 echo
 echo "Note: You may need to run this with sudo"
 echo
@@ -32,6 +33,12 @@ install_ubuntu() {
         echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
         sudo apt-get update && sudo apt-get install -y vagrant
     fi
+
+    # Install Ansible (host provisioning support)
+    if ! command -v ansible &> /dev/null; then
+        echo "Installing Ansible..."
+        sudo apt-get install -y ansible
+    fi
 }
 
 # Function to install on CentOS/RHEL/Fedora
@@ -50,6 +57,12 @@ install_rhel() {
         sudo dnf install -y dnf-plugins-core
         sudo dnf config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
         sudo dnf install -y vagrant
+    fi
+
+    # Install Ansible
+    if ! command -v ansible &> /dev/null; then
+        echo "Installing Ansible..."
+        sudo dnf install -y ansible
     fi
 }
 
@@ -74,6 +87,12 @@ install_macos() {
         echo "Installing Vagrant..."
         brew install --cask vagrant
     fi
+
+    # Install Ansible
+    if ! command -v ansible &> /dev/null; then
+        echo "Installing Ansible..."
+        brew install ansible
+    fi
 }
 
 echo "Checking if Vagrant is installed..."
@@ -93,8 +112,17 @@ else
     echo "✗ VirtualBox not found"
 fi
 
+echo
+echo "Checking if Ansible is installed..."
+if command -v ansible &> /dev/null; then
+    echo "✓ Ansible is already installed"
+    ansible --version | head -n1
+else
+    echo "✗ Ansible not found"
+fi
+
 # If both are installed, exit
-if command -v vagrant &> /dev/null && command -v VBoxManage &> /dev/null; then
+if command -v vagrant &> /dev/null && command -v VBoxManage &> /dev/null && command -v ansible &> /dev/null; then
     echo
     echo "========================================"
     echo " Prerequisites Check Complete!"
@@ -102,6 +130,7 @@ if command -v vagrant &> /dev/null && command -v VBoxManage &> /dev/null; then
     echo
     echo "✓ Vagrant is installed"
     echo "✓ VirtualBox is installed"
+    echo "✓ Ansible is installed"
     echo
     echo "You can now run the lab launcher:"
     echo "  ./launch-lab.sh"
