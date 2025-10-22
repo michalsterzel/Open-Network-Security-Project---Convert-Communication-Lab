@@ -90,21 +90,21 @@ if [ $? -ne 0 ]; then
 fi
 echo "DNS Server started successfully!"
 
-echo
-echo "Reloading DNS Server to initialize DNS-DHCP services..."
-echo "Attempting to fix read-only file system issue first..."
-vagrant ssh -c "sudo mount -o remount,rw / 2>/dev/null || echo 'Filesystem remount skipped'"
-vagrant reload
-if [ $? -ne 0 ]; then
-    echo "WARNING: Failed to reload DNS Server (this may be normal for some VMs)"
-    echo "Attempting to continue without reload..."
-    echo "Checking if DNS services are already running..."
-    vagrant ssh -c "sudo systemctl status dnsmasq 2>/dev/null || echo 'DNS service check completed'"
-    echo "Continuing with lab setup..."
-else
-    echo "DNS Server reloaded and services initialized!"
-fi
-echo
+# echo
+# echo "Reloading DNS Server to initialize DNS-DHCP services..."
+# echo "Attempting to fix read-only file system issue first..."
+# vagrant ssh -c "sudo mount -o remount,rw / 2>/dev/null || echo 'Filesystem remount skipped'"
+# vagrant reload
+# if [ $? -ne 0 ]; then
+#     echo "WARNING: Failed to reload DNS Server (this may be normal for some VMs)"
+#     echo "Attempting to continue without reload..."
+#     echo "Checking if DNS services are already running..."
+#     vagrant ssh -c "sudo systemctl status dnsmasq 2>/dev/null || echo 'DNS service check completed'"
+#     echo "Continuing with lab setup..."
+# else
+#     echo "DNS Server reloaded and services initialized!"
+# fi
+# echo
 
 echo "========================================"
 echo " Step 2: Starting Agent VM..."
