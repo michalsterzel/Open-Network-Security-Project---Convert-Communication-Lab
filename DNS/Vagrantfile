@@ -4,7 +4,7 @@
 # DNS Server VM Configuration
 Vagrant.configure("2") do |config|
   # DNS Server box - use official Ubuntu Jammy box for simplicity and consistency
-  config.vm.box = "ubuntu/jammy64"
+  config.vm.box = "bento/ubuntu-22.04"
   
   # SSH Configuration for automatic authentication
   config.ssh.username = "vagrant"

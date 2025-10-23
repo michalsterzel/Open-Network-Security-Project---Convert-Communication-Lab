@@ -5,10 +5,12 @@
 # This VM connects to the internal network of the DNS server
 Vagrant.configure("2") do |config|
   # Base box for the agent - use official Ubuntu Jammy for simplicity
-  config.vm.box = "ubuntu/jammy64"
+  config.vm.box = "bento/ubuntu-22.04"
 
   # Disable default synced folder for better isolation
   config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.synced_folder "./src", "/home/vagrant/src", type: "rsync"
+
 
   # Connect to the same internal network as the DNS server
   # This will put the agent on the same network as the DNS server (192.168.10.1)

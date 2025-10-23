@@ -5,7 +5,7 @@
 # This VM connects to the internal network of the DNS server
 Vagrant.configure("2") do |config|
   # Base box for the detective - use official Ubuntu Jammy for simplicity
-  config.vm.box = "ubuntu/jammy64"
+  config.vm.box = "bento/ubuntu-22.04"
 
   # Disable default synced folder for better isolation
   config.vm.synced_folder ".", "/vagrant", disabled: true
