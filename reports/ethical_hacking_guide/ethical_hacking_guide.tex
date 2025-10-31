@@ -1,0 +1,209 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{graphicx}
+
+\setlength{\parindent}{0pt}
+
+\definecolor{lightgray}{gray}{0.95}
+
+\lstset{
+  backgroundcolor=\color{lightgray},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  showstringspaces=false,
+  columns=fullflexible
+}
+
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+\title{\textbf{MICS Open Network Security}\\[0.5em]
+Practical Intro to Ethical Hacking}
+\author{Michal Sterzel, Alberto Finardi, Tom Gave, Jan Marxen \\ \small Secan-Lab.uni.lu}
+\date{Winter 2025/2026}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+This short guide documents the "Open Network Security" lab that is
+included in this repository. It explains how to install the required
+software on the host, how to start the lab VMs with Vagrant, 
+and how to verify that the DNS/DHCP services are running correctly.
+
+The lab provided here uses two VM roles: a DNS-DHCP server and an Agent
+client. The participant performs detective tasks on the DNS-DHCP VM by
+observing logs and DNS traffic.
+
+\textit{Updated: October 31, 2025}
+
+\textbf{Contributors:} Michal Sterzel, Alberto Finardi, Tom Gave,
+Jan Marxen
+
+\section{Important disclaimer}
+An Ethical Hacking lab must be isolated and used responsibly. Before
+running any experiment, ensure you follow these rules:
+
+\begin{itemize}[noitemsep]
+  \item Do all exercises only inside an isolated lab environment.
+  \item Do not connect lab network interfaces to production networks.
+  \item Do not run offensive or scanning tools against external hosts.
+\end{itemize}
+
+Failure to follow these rules can have severe legal
+consequences.
+
+\section{Prerequisites}
+The lab requires the following software on the host machine:
+
+\begin{itemize}[noitemsep]
+  \item VirtualBox -- the lab uses VirtualBox as provider.
+  \item Vagrant -- used to define and run the VMs.
+  \item Ansible -- required for provisioning with provided host-based playbooks.
+\end{itemize}
+
+The repository contains installer helpers that attempt to install missing
+prerequisites automatically:
+
+\begin{itemize}[noitemsep]
+  \item Linux/macOS: \texttt{./install-prerequisites.sh}
+  \item Windows: \texttt{install-prerequisites.bat}
+\end{itemize}
+
+Run the appropriate script for your platform. The Windows script will
+advise on Ansible installation options (WSL / Python) rather than forcing
+one method.
+
+\section{Lab setup}
+Starting the lab is intentionally simple. From the repository root run
+the launcher, which brings up and provisions the VMs in the correct
+order.
+
+\begin{itemize}[noitemsep]
+  \item Linux/macOS: \texttt{./launch-lab.sh}
+  \item Windows: \texttt{launch-lab.bat}
+\end{itemize}
+
+The launcher starts the DNS-DHCP VM first, then the Agent VM. Ansible
+playbooks in the repository provision the services: dnsmasq for the server,
+and client configuration with necessary covert communication abilities. 
+The launcher includes a "clean" option to destroy and
+recreate VMs (\texttt{./launch-lab.sh clean}) and a "noclean" option to
+keep existing VMs.
+
+After the launcher completes, verify the lab using the helper:
+
+\begin{verbatim}
+chmod +x test-lab.sh
+./test-lab.sh
+\end{verbatim}
+
+or (windows):
+
+\begin{verbatim}
+test-lab.bat
+\end{verbatim}
+
+The helper prints the DHCP-assigned address for the Agent and performs
+basic connectivity checks to the DNS server. You can also test manually
+from the Agent VM after \texttt{vagrant ssh}:
+
+\begin{verbatim}
+ip addr show
+ip route show
+ping -c 4 192.168.10.1    # ping DNS-DHCP server
+nslookup example.com 192.168.10.1
+\end{verbatim}
+
+To shutdown the lab, run the following commands from the repository root:
+\begin{verbatim}
+chmod +x shutdown-lab.sh
+./shutdown-lab.sh
+\end{verbatim}
+
+or (windows):
+
+\begin{verbatim}
+./shutdown-lab.bat
+\end{verbatim}
+
+In summary, the workflow is:
+\begin{enumerate}[noitemsep]
+  \item Install prerequisites \texttt{./install-prerequisites.sh} (if needed).
+  \item Launch the lab: \texttt{./launch-lab.sh}
+  \item Verify the lab: \texttt{./test-lab.sh}
+  \item Perform exercises inside the lab.
+  \item Shutdown the lab: \texttt{./shutdown-lab.sh}
+\end{enumerate}
+
+or (windows):
+
+\begin{enumerate}[noitemsep]
+  \item Install prerequisites \texttt{install-prerequisites.bat} (if needed).
+  \item Launch the lab: \texttt{launch-lab.bat}
+  \item Verify the lab: \texttt{test-lab.bat}
+  \item Perform exercises inside the lab.
+  \item Shutdown the lab: \texttt{shutdown-lab.bat}
+\end{enumerate}
+
+\section{VM roles and lab model}
+The lab uses two VM roles:
+
+\begin{itemize}[noitemsep]
+  \item \textbf{DNS-DHCP VM} -- runs \texttt{dnsmasq} on the static
+    address \texttt{192.168.10.1}. It serves DHCP leases (default range
+    \texttt{192.168.10.3-192.168.10.100}) and logs incoming DNS queries.
+  \item \textbf{Agent VM} -- a DHCP client that simulates covert
+    communications by sending encoded DNS queries to the DNS server.
+\end{itemize}
+
+In the exercises the participant acts as the detective by inspecting DNS
+requests and logs on the DNS-DHCP VM to identify and decode covert
+messages sent by the Agent.
+
+\section{Notes on network isolation and safety}
+All lab VMs attach to a VirtualBox internal network called
+\texttt{labnet}. This keeps lab traffic inside your host machine. Do
+not add bridged adapters to lab interfaces; keep them internal or
+host-only.
+
+If you want to ensure guests have no Internet access, add firewall
+rules inside the guests. The Ansible playbooks include commented
+examples for adding restrictive iptables/nftables rules.
+
+\section{Troubleshooting}
+Common checks and commands:
+
+\begin{itemize}[noitemsep]
+  \item On the host: run \texttt{vagrant status} in each VM folder to
+    verify VM states.
+  \item On the DNS-DHCP VM (via \texttt{vagrant ssh}):
+    \texttt{sudo systemctl status dnsmasq} and
+    \texttt{sudo journalctl -u dnsmasq -n 200}.
+  \item On the Agent VM: check IP and resolution with \texttt{ip addr},
+    \texttt{ip route}, \texttt{cat /etc/resolv.conf}, and
+    \texttt{ping 192.168.10.1}.
+\end{itemize}
+
+Security reminder: perform all exercises only inside this isolated lab
+and do not direct lab traffic to other networks.
+
+\section{Further reading}
+\begin{itemize}
+  \item Project README and playbooks in this repository (start here).
+  \item dnsmasq man pages and documentation: \url{http://www.thekelleys.org.uk/dnsmasq/doc.html}
+  \item Ansible documentation: \url{https://docs.ansible.com/}
+\end{itemize}
+
+\end{document}
