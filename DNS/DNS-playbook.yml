@@ -8,6 +8,27 @@
         name: dnsmasq
         state: present
         update_cache: yes
+        
+    - name: Preseed debconf to allow non-interactive tshark install
+      debconf:
+        name: wireshark-common
+        question: wireshark-common/install-setuid
+        value: true
+        vtype: boolean
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Install tshark (Debian/Ubuntu)
+      apt:
+        name: tshark
+        state: present
+        update_cache: yes
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Install tshark (RHEL/CentOS/Fedora) if available
+      package:
+        name: "tshark"
+        state: present
+      when: ansible_facts['os_family'] in ['RedHat', 'Fedora']
 
     - name: Stop systemd-resolved to free port 53 (if active)
       systemd:
