@@ -10,6 +10,45 @@
         remote_src: yes
         backup: yes
 
+    - name: Verify pip3 is available
+      command: pip3 --version
+      register: pip_version
+      changed_when: false
+      failed_when: false
+
+    - name: Show pip version (if present)
+      debug:
+        var: pip_version.stdout
+
+    - name: Ensure python3-pip is installed (Debian/Ubuntu) when pip3 missing
+      apt:
+        name: python3-pip
+        state: present
+        update_cache: yes
+      when: ansible_facts['os_family'] == 'Debian' and (pip_version.rc is undefined or pip_version.rc != 0)
+
+    - name: Ensure python3-pip is installed (RHEL/CentOS/Fedora) when pip3 missing
+      package:
+        name: python3-pip
+        state: present
+      when: ansible_facts['os_family'] in ['RedHat', 'Fedora'] and (pip_version.rc is undefined or pip_version.rc != 0)
+
+    - name: Check for requirements.txt in synced src folder
+      stat:
+        path: /home/vagrant/src/requirements.txt
+      register: req_file
+
+    - name: Install Python packages from requirements.txt
+      pip:
+        requirements: /home/vagrant/src/requirements.txt
+        executable: pip3
+      when: req_file.stat.exists
+
+    - name: Warn when requirements.txt is missing
+      debug:
+        msg: "No requirements.txt found at /home/vagrant/src/requirements.txt — skipping pip install"
+      when: not req_file.stat.exists
+
     - name: Set DNS server to 192.168.10.1
       copy:
         dest: /etc/resolv.conf
