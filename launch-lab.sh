@@ -90,21 +90,6 @@ if [ $? -ne 0 ]; then
 fi
 echo "DNS Server started successfully!"
 
-# echo
-# echo "Reloading DNS Server to initialize DNS-DHCP services..."
-# echo "Attempting to fix read-only file system issue first..."
-# vagrant ssh -c "sudo mount -o remount,rw / 2>/dev/null || echo 'Filesystem remount skipped'"
-# vagrant reload
-# if [ $? -ne 0 ]; then
-#     echo "WARNING: Failed to reload DNS Server (this may be normal for some VMs)"
-#     echo "Attempting to continue without reload..."
-#     echo "Checking if DNS services are already running..."
-#     vagrant ssh -c "sudo systemctl status dnsmasq 2>/dev/null || echo 'DNS service check completed'"
-#     echo "Continuing with lab setup..."
-# else
-#     echo "DNS Server reloaded and services initialized!"
-# fi
-# echo
 
 echo "========================================"
 echo " Step 2: Starting Agent VM..."
@@ -118,20 +103,6 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 echo "Agent VM started successfully!"
-echo
-
-echo "========================================"
-echo " Step 3: Starting Detective VM..."
-echo "========================================"
-cd ../Detective
-echo "Current directory: $(pwd)"
-cleanup_vbox_vm "detective-vm"
-vagrant up
-if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to start Detective VM"
-    exit 1
-fi
-echo "Detective VM started successfully!"
 echo
 
 cd ..

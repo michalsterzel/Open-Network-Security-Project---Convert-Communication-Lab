@@ -117,21 +117,6 @@ if %ERRORLEVEL% neq 0 (
 echo Agent VM started successfully!
 echo.
 
-echo ========================================
-echo  Step 3: Starting Detective VM...
-echo ========================================
-cd ..\Detective
-echo Current directory: %CD%
-call :cleanup_vbox_vm "detective-vm"
-vagrant up
-if %ERRORLEVEL% neq 0 (
-    echo ERROR: Failed to start Detective VM
-    pause
-    exit /b 1
-)
-echo Detective VM started successfully!
-echo.
-
 cd ..
 echo ========================================
 echo  Lab Setup Complete!
