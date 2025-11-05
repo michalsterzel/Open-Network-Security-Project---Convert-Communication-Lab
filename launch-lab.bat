@@ -4,6 +4,10 @@ REM Check for clean parameter
 set CLEAN_ENV=%1
 if "%CLEAN_ENV%"=="" set CLEAN_ENV=ask
 
+REM Jump to main script, skip subroutine definitions
+goto :main
+
+REM ===== SUBROUTINES =====
 :cleanup_vbox_vm
 rem parameters are passed via %~1
 if "%~1"=="" goto :cleanup_vbox_vm_end
@@ -16,6 +20,9 @@ for /f "usebackq tokens=*" %%G in (`VBoxManage list vms ^| findstr /i "\"%~1\""`
 )
 :cleanup_vbox_vm_end
 goto :eof
+
+REM ===== MAIN SCRIPT =====
+:main
 
 call :cleanup_vbox_vm "open-net-dns-server"
 echo ========================================
