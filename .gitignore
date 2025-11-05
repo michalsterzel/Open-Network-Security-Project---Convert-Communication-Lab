@@ -3,6 +3,9 @@
 Vagrantfile.local
 *.log
 
+# Detective VM (no longer tracked)
+Detective/
+
 # VirtualBox files
 *.vbox
 *.vbox-prev
