@@ -6,7 +6,9 @@ echo.
 echo This script will check and install:
 echo - Vagrant
 echo - VirtualBox
-echo - Ansible (optional: required if you provision from the host)
+echo.
+echo Note: Ansible is NOT required on Windows.
+echo       The lab uses ansible_local (runs inside VMs automatically).
 echo.
 echo Note: You may need to run this as Administrator
 echo.
@@ -48,17 +50,6 @@ if %ERRORLEVEL% equ 0 (
 )
 
 echo.
-echo Checking if Ansible is installed...
-where ansible >nul 2>&1
-if %ERRORLEVEL% equ 0 (
-    echo ✓ Ansible is already installed
-    ansible --version 2>nul
-) else (
-    echo ✗ Ansible not found
-    echo Note: On Windows you can install Ansible via WSL, pip inside a Python virtualenv, or by using Chocolatey/WSL. See: https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html
-)
-
-echo.
 echo ========================================
 echo  Prerequisites Check Complete!
 echo ========================================
@@ -66,9 +57,8 @@ echo.
 echo ✓ Vagrant is installed
 echo ✓ VirtualBox is installed
 echo.
-if %ERRORLEVEL% equ 0 (
-    echo If you plan to run Ansible from this host, please install Ansible as noted above.
-)
+echo Note: Ansible is automatically installed inside each VM.
+echo       No host Ansible installation required on Windows!
 echo.
 echo You can now run the lab launcher:
 echo   .\launch-lab.bat

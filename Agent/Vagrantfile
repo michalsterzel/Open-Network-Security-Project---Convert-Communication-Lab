@@ -7,9 +7,17 @@ Vagrant.configure("2") do |config|
   # Base box for the agent - use official Ubuntu Jammy for simplicity
   config.vm.box = "bento/ubuntu-22.04"
 
-  # Disable default synced folder for better isolation
-  config.vm.synced_folder ".", "/vagrant", disabled: true
-  config.vm.synced_folder "./src", "/home/vagrant/src", type: "rsync"
+  # Synced folders
+  # On Windows (using ansible_local), we need /vagrant synced for playbook access
+  # On Linux/macOS (using host ansible), we can disable it for better isolation
+  if Vagrant::Util::Platform.windows?
+    # Keep default /vagrant sync enabled for ansible_local
+    config.vm.synced_folder "./src", "/home/vagrant/src", type: "rsync"
+  else
+    # Disable default synced folder for better isolation
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+    config.vm.synced_folder "./src", "/home/vagrant/src", type: "rsync"
+  end
 
 
   # Connect to the same internal network as the DNS server
@@ -37,12 +45,20 @@ Vagrant.configure("2") do |config|
     vb.name = "agent-vm"
   end
 
-  # Provision Agent VM using Ansible on the host to set resolver
-  config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "./agent-playbook.yml"
-    # Use Vagrant-generated inventory so the correct SSH port/key are used
-    # Ensure the generated inventory exposes a group named 'agent' pointing to this VM
-    ansible.groups = { 'agent' => ['default'] }
-    # Do NOT set ansible.inventory_path or ansible.limit here — let Vagrant handle inventory and limits
+  # Provision Agent VM using Ansible
+  # On Windows: use ansible_local (runs Ansible inside the VM)
+  # On Linux/macOS: use ansible (runs from host)
+  if Vagrant::Util::Platform.windows?
+    config.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "/vagrant/agent-playbook.yml"
+      ansible.groups = { 'agent' => ['default'] }
+      ansible.install = true
+      ansible.install_mode = :default
+    end
+  else
+    config.vm.provision "ansible" do |ansible|
+      ansible.playbook = "./agent-playbook.yml"
+      ansible.groups = { 'agent' => ['default'] }
+    end
   end
 end

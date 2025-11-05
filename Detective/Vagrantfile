@@ -7,8 +7,15 @@ Vagrant.configure("2") do |config|
   # Base box for the detective - use official Ubuntu Jammy for simplicity
   config.vm.box = "bento/ubuntu-22.04"
 
-  # Disable default synced folder for better isolation
-  config.vm.synced_folder ".", "/vagrant", disabled: true
+  # Synced folders
+  # On Windows (using ansible_local), we need /vagrant synced for playbook access
+  # On Linux/macOS (using host ansible), we can disable it for better isolation
+  if Vagrant::Util::Platform.windows?
+    # Keep default /vagrant sync enabled for ansible_local
+  else
+    # Disable default synced folder for better isolation
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+  end
 
   # Connect to the same internal network as the DNS server
   # This will put the agent on the same network as the DNS server (192.168.10.1)
@@ -35,11 +42,20 @@ Vagrant.configure("2") do |config|
     vb.name = "detective-vm"
   end
 
-  # Provisioning script to configure the agent
-  # Provision Detective VM using Ansible to set resolver (mirrors Agent)
-  config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "./detective-playbook.yml"
-    ansible.groups = { 'detective' => ['default'] }
-    # Use Vagrant-generated inventory (do not set inventory_path)
+  # Provision Detective VM using Ansible
+  # On Windows: use ansible_local (runs Ansible inside the VM)
+  # On Linux/macOS: use ansible (runs from host)
+  if Vagrant::Util::Platform.windows?
+    config.vm.provision "ansible_local" do |ansible|
+      ansible.playbook = "/vagrant/detective-playbook.yml"
+      ansible.groups = { 'detective' => ['default'] }
+      ansible.install = true
+      ansible.install_mode = :default
+    end
+  else
+    config.vm.provision "ansible" do |ansible|
+      ansible.playbook = "./detective-playbook.yml"
+      ansible.groups = { 'detective' => ['default'] }
+    end
   end
 end
