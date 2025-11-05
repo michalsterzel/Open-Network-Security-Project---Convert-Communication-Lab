@@ -31,14 +31,22 @@ Vagrant.configure("2") do |config|
   # On Windows: use ansible_local (runs Ansible inside the VM)
   # On Linux/macOS: use ansible (runs from host)
   if Vagrant::Util::Platform.windows?
+    # First, install Ansible via shell provisioner
+    config.vm.provision "shell", inline: <<-SHELL
+      if ! command -v ansible-playbook &> /dev/null; then
+        echo "Installing Ansible..."
+        apt-get update -qq
+        DEBIAN_FRONTEND=noninteractive apt-get install -y -qq ansible
+      else
+        echo "Ansible already installed"
+      fi
+    SHELL
+    
+    # Then run the playbook with ansible_local (without auto-install)
     config.vm.provision "ansible_local" do |ansible|
       ansible.playbook = "/vagrant/DNS-playbook.yml"
       ansible.groups = { 'dns' => ['default'] }
-      ansible.install = true
-      # Use pip_args_only to skip the complex pip installation and use system packages
-      ansible.install_mode = :pip_args_only
-      ansible.pip_args = "ansible"
-      ansible.pip_install_cmd = "sudo apt-get update -qq && sudo apt-get install -y -qq python3-pip && sudo pip3 install"
+      ansible.install = false  # We already installed it above
     end
   else
     config.vm.provision "ansible" do |ansible|
