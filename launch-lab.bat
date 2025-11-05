@@ -27,10 +27,9 @@ REM ===== MAIN SCRIPT =====
 call :cleanup_vbox_vm "open-net-dns-server"
 echo ========================================
 echo.
-echo This script will launch all three VMs in the correct order:
+echo This script will launch the lab VMs in the correct order:
 echo 1. DNS Server (192.168.10.1)
 echo 2. Agent (DHCP)
-echo 3. Detective (DHCP)
 echo.
 
 REM Handle cleanup based on parameter
@@ -39,8 +38,6 @@ if "%CLEAN_ENV%"=="clean" (
     cd DNS
     vagrant destroy -f >nul 2>&1
     cd ..\Agent
-    vagrant destroy -f >nul 2>&1
-    cd ..\Detective
     vagrant destroy -f >nul 2>&1
     cd ..
     echo Cleanup complete. Starting fresh lab setup...
@@ -61,8 +58,6 @@ if "%CLEAN_ENV%"=="clean" (
         cd DNS
         vagrant destroy -f >nul 2>&1
         cd ..\Agent
-        vagrant destroy -f >nul 2>&1
-        cd ..\Detective
         vagrant destroy -f >nul 2>&1
         cd ..
         echo Cleanup complete. Starting fresh lab setup...
@@ -125,7 +120,6 @@ echo.
 echo All VMs are now running:
 echo - DNS Server: 192.168.10.1
 echo - Agent: Check IP with 'vagrant ssh' then 'ip addr'
-echo - Detective: Check IP with 'vagrant ssh' then 'ip addr'
 echo.
 echo To connect to a VM:
 echo   cd [VM_folder] ^&^& vagrant ssh

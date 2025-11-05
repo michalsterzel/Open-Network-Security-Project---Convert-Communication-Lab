@@ -5,7 +5,7 @@ setlocal
 rem Determine script directory
 set "ROOT_DIR=%~dp0"
 
-echo Testing lab connectivity: Agent and Detective -> DNS (192.168.10.1)
+echo Testing lab connectivity: Agent -> DNS (192.168.10.1)
 
 rem Check that vagrant is available
 vagrant --version >nul 2>&1
@@ -38,7 +38,6 @@ goto :eof
 
 :main
 call :run_check "%ROOT_DIR%Agent" "Agent"
-call :run_check "%ROOT_DIR%Detective" "Detective"
 
 echo.
 echo Test complete.

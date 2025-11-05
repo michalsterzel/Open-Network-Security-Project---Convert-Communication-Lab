@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "Testing lab connectivity: Agent and Detective -> DNS (192.168.10.1)"
+echo "Testing lab connectivity: Agent -> DNS (192.168.10.1)"
 
 run_check() {
   local vm_dir="$1"
@@ -23,7 +23,6 @@ run_check() {
 }
 
 run_check "$ROOT_DIR/Agent" "Agent"
-run_check "$ROOT_DIR/Detective" "Detective"
 
 echo
 echo "Test complete."

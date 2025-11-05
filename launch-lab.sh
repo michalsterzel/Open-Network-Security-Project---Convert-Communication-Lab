@@ -7,10 +7,9 @@ echo "========================================"
 echo " Open Network Security Lab Launcher"
 echo "========================================"
 echo
-echo "This script will launch all three VMs in the correct order:"
+echo "This script will launch the lab VMs in the correct order:"
 echo "1. DNS Server (192.168.10.1)"
 echo "2. Agent (DHCP)"
-echo "3. Detective (DHCP)"
 echo
 
 # Handle cleanup based on parameter
@@ -18,7 +17,6 @@ if [ "$CLEAN_ENV" = "clean" ]; then
     echo "Cleaning up existing lab VMs..."
     cd DNS && vagrant destroy -f >/dev/null 2>&1
     cd ../Agent && vagrant destroy -f >/dev/null 2>&1
-    cd ../Detective && vagrant destroy -f >/dev/null 2>&1
     cd ..
     echo "Cleanup complete. Starting fresh lab setup..."
     echo
@@ -35,7 +33,6 @@ else
             echo "Cleaning up existing lab VMs..."
             cd DNS && vagrant destroy -f >/dev/null 2>&1
             cd ../Agent && vagrant destroy -f >/dev/null 2>&1
-            cd ../Detective && vagrant destroy -f >/dev/null 2>&1
             cd ..
             echo "Cleanup complete. Starting fresh lab setup..."
             echo
@@ -113,7 +110,6 @@ echo
 echo "All VMs are now running:"
 echo "- DNS Server: 192.168.10.1"
 echo "- Agent: Check IP with 'vagrant ssh' then 'ip addr'"
-echo "- Detective: Check IP with 'vagrant ssh' then 'ip addr'"
 echo
 echo "To connect to a VM:"
 echo "  cd [VM_folder] && vagrant ssh"
