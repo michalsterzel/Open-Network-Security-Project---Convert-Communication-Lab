@@ -114,6 +114,9 @@ echo
 echo "To connect to a VM:"
 echo "  cd [VM_folder] && vagrant ssh"
 echo
+echo "To test the setup:"
+echo "  ./test-lab.sh"
+echo
 echo "To stop all VMs:"
 echo "  ./shutdown-lab.sh"
 echo

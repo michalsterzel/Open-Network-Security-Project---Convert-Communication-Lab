@@ -127,6 +127,9 @@ echo.
 echo To stop all VMs:
 echo   .\shutdown-lab.bat
 echo.
+echo To test the setup:
+echo   .\test-lab.bat
+echo.
 echo Usage examples:
 echo   .\launch-lab.bat         (ask about cleanup)
 echo   .\launch-lab.bat clean   (clean existing VMs)
