@@ -6,14 +6,16 @@ if "%CLEAN_ENV%"=="" set CLEAN_ENV=ask
 
 :cleanup_vbox_vm
 rem parameters are passed via %~1
-if "%~1"=="" goto :eof
+if "%~1"=="" goto :cleanup_vbox_vm_end
 where VBoxManage >nul 2>&1
-if %ERRORLEVEL% neq 0 goto :eof
+if %ERRORLEVEL% neq 0 goto :cleanup_vbox_vm_end
 for /f "usebackq tokens=*" %%G in (`VBoxManage list vms ^| findstr /i "\"%~1\""`) do (
     echo Found existing VirtualBox VM named '%~1'. Attempting to power off and remove it to avoid conflicts...
     VBoxManage controlvm "%~1" poweroff >nul 2>&1 || echo Poweroff attempt failed or VM not running
     VBoxManage unregistervm "%~1" --delete >nul 2>&1 && echo Removed existing VM '%~1' || echo Warning: failed to unregister VM '%~1' (it may be locked or in use)
 )
+:cleanup_vbox_vm_end
+goto :eof
 
 call :cleanup_vbox_vm "open-net-dns-server"
 echo ========================================
