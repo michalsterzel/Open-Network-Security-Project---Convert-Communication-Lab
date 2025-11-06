@@ -25,6 +25,7 @@ from channels.case_toggle_channel import CaseToggleChannel
 from channels.label_count_channel import LabelCountChannel
 from channels.txid_channel import TXIDChannel
 from channels.rd_flag_channel import RDFlagChannel
+from channels.base32_channel_exercise import Base32ChannelExercise
 
 __all__ = [
     'Base32Channel',

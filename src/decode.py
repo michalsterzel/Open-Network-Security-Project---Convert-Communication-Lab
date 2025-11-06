@@ -16,12 +16,13 @@ from typing import Optional
 
 # Import covert channel implementations
 from channels import (Base32Channel, HexChannel, XORBase32Channel, TTLChannel, TTLDNSChannel,
-                      QTypeChannel, CaseToggleChannel, LabelCountChannel, TXIDChannel, RDFlagChannel)
+                      QTypeChannel, CaseToggleChannel, LabelCountChannel, TXIDChannel, RDFlagChannel, Base32ChannelExercise)
 
 
 # Available covert channels
 CHANNELS = {
     'base32': Base32Channel,
+    'base32-exercise': Base32ChannelExercise,
     'hex': HexChannel,
     'xor': XORBase32Channel,
     'ttl': TTLChannel,

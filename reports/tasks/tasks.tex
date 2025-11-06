@@ -1,0 +1,598 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{parskip}
+\usepackage{graphicx}
+
+\setlength{\parindent}{0pt}
+
+\definecolor{lightgray}{gray}{0.95}
+\definecolor{codecolor}{rgb}{0.1,0.1,0.4}
+
+\lstset{
+  backgroundcolor=\color{lightgray},
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  showstringspaces=false,
+  columns=fullflexible,
+  keywordstyle=\color{codecolor}\bfseries,
+  commentstyle=\color{gray}\itshape
+}
+
+\titleformat{\section}{\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{1em}{}
+
+\title{\textbf{MICS Open Network Security}\\[0.5em]}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This document contains practical tasks for the DNS Covert Channels lab. You will act as a detective investigating suspicious DNS traffic from a compromised agent machine. The agent is exfiltrating data through DNS queries using various covert channel techniques.
+
+\textbf{Estimated total time:} 40-45 minutes
+
+\textbf{Prerequisites:}
+\begin{itemize}[noitemsep]
+  \item Lab environment running (see Ethical Hacking Guide)
+  \item Basic understanding of DNS protocol
+  \item Familiarity with command-line tools (tshark, python)
+  \item Access to both DNS-DHCP VM and Agent VM
+\end{itemize}
+
+\section{Task 1: Single-Message Subdomain Encoding}
+
+\textbf{Estimated time:} 20 minutes
+
+In this task, you will investigate single-packet covert channels where data is encoded directly in DNS subdomain labels. The agent encodes entire messages into a single DNS query subdomain.
+
+\textbf{Important Note - Live vs. Saved Captures:}
+\begin{itemize}[noitemsep]
+  \item Most exercises use \textbf{live tshark sessions} for immediate feedback and simpler workflow
+  \item We filter captures to show \textbf{only DNS request packets} (dns.flags.response == 0) for cleaner data analysis
+  \item This filtering removes DNS response packets, making it easier to focus on the queries being sent
+  \item You can also \textbf{save captures to pcap files} for later analysis or submission (demonstrated in Task 1.4c)
+  \item Pcap files can be transferred from the VM to your host machine for archiving or grading
+\end{itemize}
+
+\textbf{Important Note - Using the DNS Covert Channel Tools:}
+This lab provides ready-to-use commands for running the DNS covert channel agent and decoder tool. You will not need to write code from scratch. However, Task 1.6 includes a small coding exercise to help you understand the encoding mechanisms better. The codebase includes a README file with detailed usage instructions for both the agent and decoder tool if you need to reference them during the lab.
+
+\subsection{Task 1.1: Understanding Normal DNS Traffic}
+
+Before investigating covert channels, let's first understand what normal DNS traffic looks like.
+
+\textbf{Setup - Terminal 1 (DNS-DHCP VM):}
+\begin{enumerate}[noitemsep]
+  \item Open a terminal and SSH into the DNS-DHCP VM:
+\begin{lstlisting}[language=bash]
+cd DNS && vagrant ssh
+\end{lstlisting}
+  \item Start capturing DNS traffic on port 53 with live display:
+\begin{lstlisting}[language=bash]
+sudo tshark -i eth1 -f "port 53" -Y "dns.flags.response == 0" \
+       -T fields -e dns.qry.name
+\end{lstlisting}
+  \item Leave this running - you'll see DNS queries displayed live as they occur
+\end{enumerate}
+
+\textbf{Setup - Terminal 2 (Agent VM):}
+\begin{enumerate}[noitemsep]
+  \item Open a second terminal and SSH into the Agent VM:
+\begin{lstlisting}[language=bash]
+cd Agent && vagrant ssh
+\end{lstlisting}
+  \item Send a few normal DNS queries using nslookup:
+\begin{lstlisting}[language=bash]
+nslookup google.com
+nslookup example.com
+nslookup test.example.com
+\end{lstlisting}
+\end{enumerate}
+
+\textbf{Analyzing Normal Traffic:}
+\begin{enumerate}[noitemsep]
+  \item Observe the DNS queries appearing in Terminal 1 in real-time
+  \item Notice the simple, readable domain names (google.com, example.com, test.example.com)
+  \item Keep the tshark capture running for the next task
+\end{enumerate}
+
+\textbf{Question 1.1a:} Count how many DNS query lines appeared in your tshark output. How many DNS queries were captured?
+
+\textbf{Question 1.1b:} What do normal DNS subdomains look like? Are they human-readable?
+
+\subsection{Task 1.2: Capturing Covert Channel Traffic}
+
+Now let's capture traffic from the covert channel agent and compare it to normal DNS.
+
+\textbf{Setup - Terminal 1 (DNS-DHCP VM):}
+\begin{enumerate}[noitemsep]
+  \item If your previous tshark capture is still running, stop it with Ctrl+C
+  \item Start a new live capture for covert traffic:
+\begin{lstlisting}[language=bash]
+sudo tshark -i eth1 -f "port 53" -Y "dns.flags.response == 0" \
+       -T fields -e dns.qry.name
+\end{lstlisting}
+\end{enumerate}
+
+\textbf{Setup - Terminal 2 (Agent VM):}
+\begin{enumerate}[noitemsep]
+  \item Navigate to the agent source directory:
+\begin{lstlisting}[language=bash]
+cd src
+\end{lstlisting}
+  \item Send a message using base32 encoding:
+\begin{lstlisting}[language=bash]
+python3 main.py --channel base32 --data "Hello" --mode send
+\end{lstlisting}
+  \item Send another message using hex encoding:
+\begin{lstlisting}[language=bash]
+python3 main.py --channel hex --data "World" --mode send
+\end{lstlisting}
+  \item Send one more message with base32:
+\begin{lstlisting}[language=bash]
+python3 main.py --channel base32 --data "DNS" --mode send
+\end{lstlisting}
+\end{enumerate}
+
+\textbf{Analyzing Covert Traffic:}
+\begin{enumerate}[noitemsep]
+  \item Observe the covert DNS queries appearing live in Terminal 1
+  \item You should see encoded subdomains like "irhfg.example.com" (base32) and hex-encoded strings
+  \item Compare these subdomains to the normal ones from Task 1.1
+  \item Stop the capture with Ctrl+C when done
+\end{enumerate}
+
+\textbf{Question 1.2a:} What differences do you notice between normal DNS queries and covert channel queries? How do the subdomains look different?
+
+\textbf{Question 1.2b:} How many covert DNS query lines appeared in your tshark output?
+
+\subsection{Task 1.3: Identifying Encoding Types}
+
+DNS covert channels use different encoding schemes. The main ones used in this lab are:
+\begin{itemize}[noitemsep]
+  \item \textbf{Hexadecimal encoding}: Uses characters 0-9 and a-f (16 possible values)
+  \item \textbf{Base32 encoding}: Uses characters a-z and 2-7 (32 possible values)
+  \item \textbf{XOR + Base32 encoding}: Adds an encryption layer on top of base32 for additional obfuscation (bonus - see end of section)
+\end{itemize}
+
+\textbf{Hints for identification:}
+\begin{itemize}[noitemsep]
+  \item If subdomain contains \textbf{only digits (0-9) and letters a-f}, it's likely hexadecimal
+  \item If subdomain contains \textbf{letters and digits 2-7} (but never 0, 1, 8, 9), it's likely base32
+  \item Base32 never uses characters 0, 1, 8, or 9 to avoid confusion
+  \item Character set size: hex (16) is less efficient than base32 (32)
+  \item XOR-encrypted messages look like base32 but decode to garbage unless you have the encryption key
+\end{itemize}
+
+
+\textbf{Question 1.3a:} Imagine looking at a captured covert traffic where a subdomain starts with "ob4xa". Based on the character set hints above, what encoding do you think this is? List the unique characters you see and explain your reasoning.
+
+\subsection{Task 1.4: Decoding Covert Messages}
+
+Now that you've identified the encoding types, use the decoder tool to extract the hidden messages.
+
+\textbf{Steps:}
+\begin{enumerate}[noitemsep]
+  \item In Terminal 2 (Agent VM), make sure you're in the source directory (src)
+  \item From your live tshark capture, you should have seen the subdomain "irhfg" (base32 encoded "DNS")
+  \item Decode it using the decoder:
+\begin{lstlisting}[language=bash]
+python3 decode.py --channel base32 --encoded "irhfg"
+\end{lstlisting}
+  \item You should see the decoded message
+\end{enumerate}
+
+\textbf{Expected output example:}
+\begin{lstlisting}
+======================================================================
+DECODED MESSAGE
+======================================================================
+
+DNS
+
+======================================================================
+
+Decoded 3 bytes
+  Text (UTF-8): DNS
+  Hex: 444e53
+  Bytes: b'DNS'
+\end{lstlisting}
+
+\textbf{Question 1.4a:} Now find and decode the "World" message from your tshark capture. First, extract the hex-encoded subdomain (remove the ".example.com" part), then decode it:
+\begin{lstlisting}[language=bash]
+python3 decode.py --channel hex \
+        --encoded "YOUR_HEX_SUBDOMAIN_HERE"
+\end{lstlisting}
+
+What is the decoded message? Paste both the encoded subdomain and decoded result.
+
+\textbf{Question 1.4b:} Decode the "Hello" message. Extract the base32 subdomain from your tshark capture and decode it. What subdomain did you find, and what did it decode to?
+
+\subsection{Task 1.4c: Saving Captures to Pcap Files (For Submission)}
+
+While live captures are convenient for analysis, you may need to save traffic to a file for submission or later review. This task demonstrates how to capture to a pcap file and transfer it to your host machine.
+
+\textbf{Capturing to a Pcap File:}
+
+\textbf{Setup - Terminal 1 (DNS-DHCP VM):}
+\begin{enumerate}[noitemsep]
+  \item Start capturing to a file (without live display):
+\begin{lstlisting}[language=bash]
+sudo tshark -i eth1 -f "port 53" -w /tmp/covert_evidence.pcap
+\end{lstlisting}
+  \item You won't see output - packets are being saved to the file
+\end{enumerate}
+
+\textbf{Setup - Terminal 2 (Agent VM):}
+\begin{enumerate}[noitemsep]
+  \item Send multiple covert messages:
+\begin{lstlisting}[language=bash]
+python3 main.py --channel base32 --data "Evidence" --mode send
+python3 main.py --channel hex --data "Lab" --mode send
+python3 main.py --channel base32 --data "Capture" --mode send
+\end{lstlisting}
+\end{enumerate}
+
+\textbf{Analyzing the Saved Pcap:}
+\begin{enumerate}[noitemsep]
+  \item Return to Terminal 1 and stop the capture with Ctrl+C
+  \item Read the saved pcap file (filtering for requests only):
+\begin{lstlisting}[language=bash]
+sudo tshark -r /tmp/covert_evidence.pcap \
+       -Y "dns.flags.response == 0" \
+       -T fields -e dns.qry.name
+\end{lstlisting}
+  \item You should see the three encoded subdomains
+\end{enumerate}
+
+\textbf{Transferring the Pcap to Your Host Machine:}
+
+The pcap file is inside the VM. To submit it or analyze it on your host machine, you need to copy it out:
+
+\begin{enumerate}[noitemsep]
+  \item First, copy the file to the shared Vagrant directory (still in Terminal 1 - DNS-DHCP VM):
+\begin{lstlisting}[language=bash]
+sudo cp /tmp/covert_evidence.pcap /vagrant/
+sudo chmod 644 /vagrant/covert_evidence.pcap
+\end{lstlisting}
+  \item Exit the VM:
+\begin{lstlisting}[language=bash]
+exit
+\end{lstlisting}
+  \item On your host machine, the file is now in your DNS directory:
+\begin{lstlisting}[language=bash]
+# Navigate to your DNS directory (outside the VM)
+cd DNS
+ls -l covert_evidence.pcap
+\end{lstlisting}
+  \item You can now open it with Wireshark, submit it, or analyze it further
+\end{enumerate}
+
+\textbf{Question 1.4c:} Create a pcap file capturing your own covert messages. Save it as \texttt{task1\_submission.pcap} and transfer it to your host machine. How many DNS query packets (requests only) are in your file? Use this command to count:
+\begin{lstlisting}[language=bash]
+sudo tshark -r /tmp/task1_submission.pcap \
+       -Y "dns.flags.response == 0" | wc -l
+\end{lstlisting}
+
+\textbf{Note:} Keep this file for your lab submission. Include both the pcap file and the decoded messages in your report.
+
+\subsection{Task 1.5: Generating Encoded Messages}
+
+Now that you understand how to decode messages, let's learn how to generate encoded messages without sending them.
+
+\textbf{Question 1.5a:} You need to exfiltrate the message "SecretData" using base32 encoding. What would the subdomain look like?
+
+\textbf{Option 1 - Use the agent in print mode (doesn't send):}
+\begin{lstlisting}[language=bash]
+python3 main.py --channel base32 --data "SecretData" --mode print
+\end{lstlisting}
+
+The output will show you the encoded subdomain without actually sending it.
+
+\textbf{Option 2 - Send it and capture with tshark:}
+\begin{enumerate}[noitemsep]
+  \item Start tshark on DNS-DHCP VM:
+\begin{lstlisting}[language=bash]
+sudo tshark -i eth1 -f "port 53" \
+       -T fields -e dns.qry.name
+\end{lstlisting}
+  \item Send the message from Agent VM:
+\begin{lstlisting}[language=bash]
+python3 main.py --channel base32 --data "SecretData" --mode send
+\end{lstlisting}
+  \item Observe the subdomain in the tshark output
+\end{enumerate}
+
+\textbf{Question 1.5b:} What is the base32-encoded subdomain for "SecretData"? Verify by decoding it - does it decode back correctly?
+
+\subsection{Task 1.6: Code Completion Exercise}
+
+The agent includes a training exercise to help you understand encoding. You'll complete a simple base32 encoding function.
+
+\textbf{Objective:} Complete the \texttt{encode()} function in a training exercise file.
+
+\textbf{File location:} \texttt{Agent/src/channels/base32\_channel\_exercise.py}
+
+\textbf{Note:} Once you modify you local files, you need to reboot the Agent VM to load changes:
+\begin{lstlisting}[language=bash]
+exit
+vagrant reload
+vagrant ssh
+\end{lstlisting}
+
+\textbf{Testing your implementation:}
+\begin{lstlisting}[language=bash]
+cd src
+python3 main.py --channel base32-exercise \
+        --data "TestMessage" --mode print
+\end{lstlisting}
+
+You should see complete and encrypt the message correctly.
+
+\textbf{Question 1.6a:} If you encode the same message, with "base32" instead of "base32-exercise", what subdomain do you get? Does it match your implementation?
+
+\textbf{Question 1.6b:} After completing the function successfully, encode the message "Covert" using your function. What is the encoded output?
+
+\textbf{Question 1.6c:} Verify your encoded "Covert" message by decoding it with the decoder tool. Does it decode back to "Covert" correctly? You can use mode \texttt{print} to avoid sending and just see the encoded output.
+
+\subsection{Task 1.7 (Bonus): XOR Encryption Layer}
+
+\textbf{Optional Challenge:} For advanced obfuscation, the lab includes an XOR-encrypted base32 channel that adds an encryption layer on top of base32 encoding. This makes the message much harder to decode without knowing the encryption key.
+
+\textbf{How XOR Encryption Works:}
+\begin{enumerate}[noitemsep]
+  \item The message is first XOR-encrypted with a secret key
+  \item The encrypted bytes are then base32-encoded
+  \item Without the key, the decoded message appears as random garbage
+  \item With the correct key, the message can be decrypted
+\end{enumerate}
+
+\textbf{Trying XOR Encryption:}
+
+\textbf{Step 1 - Send an encrypted message:}
+\begin{lstlisting}[language=bash]
+# Send a message with XOR encryption using key "Secret"
+python3 main.py --channel xor --data "Hidden" \
+        --key "Secret" --mode print
+\end{lstlisting}
+
+\textbf{Step 2 - Try decoding without the key:}
+\begin{lstlisting}[language=bash]
+# Extract the subdomain from the output above
+python3 decode.py --channel base32 --encoded "SUBDOMAIN_HERE"
+\end{lstlisting}
+
+You'll see garbage output because it's encrypted!
+
+\textbf{Step 3 - Decode with the correct key:}
+\begin{lstlisting}[language=bash]
+python3 decode.py --channel xor --encoded "SUBDOMAIN_HERE" \
+        --key "Secret"
+\end{lstlisting}
+
+Now you should see "Hidden" correctly decoded.
+
+\textbf{Question 1.7 (Bonus):}
+\begin{enumerate}[label=\alph*), noitemsep]
+  \item Send a message using XOR encryption with your own secret key. What subdomain is generated?
+  \item Try to decode it without the key using base32. What do you see?
+  \item Decode it with the correct key. Does it work?
+  \item Why is XOR encryption useful for covert channels? What additional security does it provide?
+\end{enumerate}
+
+\newpage
+
+\section{Task 2: Multi-Packet Covert Channels}
+
+\textbf{Estimated time:} 20 minutes
+
+Multi-packet covert channels encode data across multiple DNS queries by manipulating DNS header fields or query characteristics. In this task, you'll investigate channels that require multiple packets to transmit a single message.
+
+\subsection{Task 2.1: Understanding the RD Flag Channel}
+
+The Recursion Desired (RD) flag channel encodes data by toggling the RD flag bit in DNS query headers. This is extremely covert as RD flag variation appears normal.
+
+\textbf{How it works:}
+\begin{itemize}[noitemsep]
+  \item Each DNS query encodes exactly 1 bit of data
+  \item RD flag set (1) = bit value 1
+  \item RD flag clear (0) = bit value 0
+  \item 8 queries needed per byte (8 bits = 1 byte)
+\end{itemize}
+
+\textbf{Example:} Character 'H' (ASCII 0x48 = binary 01001000)
+\begin{center}
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+\hline
+Bit position & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\hline
+Bit value & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 \\
+\hline
+RD flag & Clear & Set & Clear & Clear & Set & Clear & Clear & Clear \\
+\hline
+\end{tabular}
+\end{center}
+
+\textbf{Question 2.1:} How many DNS queries are needed to transmit the 2-byte message "Hi"? Show your calculation.
+
+\textbf{Question 2.2:} If you observe 64 DNS queries with varying RD flags, how many bytes of data were transmitted?
+
+\subsection{Task 2.2: Sending and Capturing RD Flag Messages}
+
+Now you'll send messages using the RD flag channel and capture them to see how multi-packet encoding works.
+
+\textbf{Setup - Terminal 1 (DNS-DHCP VM):}
+\begin{enumerate}[noitemsep]
+  \item Start a new capture showing RD flags:
+\begin{lstlisting}[language=bash]
+sudo tshark -i eth1 -f "port 53" -Y "dns.flags.response == 1" \
+       -T fields -e frame.number -e dns.flags.recdesired \
+       -e dns.qry.name
+\end{lstlisting}
+  \item Leave this running to capture the RD flag values
+\end{enumerate}
+
+\textbf{Setup - Terminal 2 (Agent VM):}
+\begin{enumerate}[noitemsep]
+  \item In the Agent VM, send a short message using RD flag channel:
+\begin{lstlisting}[language=bash]
+python3 main.py --channel rd --data "Hi" --mode send
+\end{lstlisting}
+  \item You should see output showing how many queries are needed (16 for "Hi")
+  \item Send another message:
+\begin{lstlisting}[language=bash]
+python3 main.py --channel rd --data "OK" --mode send
+\end{lstlisting}
+\end{enumerate}
+
+\textbf{Analysis:}
+\begin{enumerate}[noitemsep]
+  \item Return to Terminal 1 and observe the RD flag values
+  \item You should see patterns like: 0,1,0,0,1,0,0,0,0,1,1,0,1,0,0,1
+  \item Stop the capture with Ctrl+C
+\end{enumerate}
+
+\textbf{Question 2.3:} Looking at your tshark output, record the sequence of RD flag values for the "Hi" message (should be 16 values: 8 bits for 'H' + 8 bits for 'i'). Write them as comma-separated values.
+
+\subsection{Task 2.3: Decoding Your Multi-Packet Messages}
+
+The decoder tool can decode RD flag sequences back to the original message. Let's verify the messages you sent.
+
+\textbf{Steps:}
+\begin{enumerate}[noitemsep]
+  \item In Terminal 2 (Agent VM), use the decoder to verify your "Hi" message:
+\begin{lstlisting}[language=bash]
+python3 decode.py --channel rd \
+        --encoded "RD:YOUR_SEQUENCE_FROM_QUESTION_2.3"
+\end{lstlisting}
+  \item Replace \texttt{YOUR\_SEQUENCE\_FROM\_QUESTION\_2.3} with the actual RD flags you captured
+  \item Verify it decodes to "Hi"
+\end{enumerate}
+
+\textbf{Expected output example:}
+\begin{lstlisting}
+======================================================================
+DECODED MESSAGE
+======================================================================
+
+Hi
+
+======================================================================
+
+Decoded 2 bytes
+  Text (UTF-8): Hi
+  Hex: 4869
+  Bytes: b'Hi'
+\end{lstlisting}
+
+\textbf{Question 2.4:} Now decode the "OK" message using the RD flag sequence you captured. Paste the RD sequence you use and confirm it decodes correctly to "OK".
+
+\textbf{Question 2.4b:} For verification, manually decode this RD flag sequence. What message was transmitted?
+\begin{lstlisting}
+RD:0,1,0,0,0,0,0,1
+\end{lstlisting}
+
+\textbf{Hint:} This is an 8-bit (1-byte) message. What ASCII character is 01000001 in binary?
+
+\subsection{Task 2.4: Other Multi-Packet Channels}
+
+The lab includes several other multi-packet covert channels. Explore them using the decoder's help:
+
+\begin{lstlisting}[language=bash]
+python3 decode.py --help
+\end{lstlisting}
+
+\textbf{Available multi-packet channels:}
+\begin{itemize}[noitemsep]
+  \item \textbf{ttl}: Encodes data in DNS TTL (Time To Live) values
+  \item \textbf{qtype}: Encodes data by varying DNS query types (A, AAAA, MX, etc.)
+  \item \textbf{txid}: Encodes data in transaction ID field
+  \item \textbf{labels}: Encodes data in the number of domain labels
+  \item \textbf{case}: Encodes data in case variations of domain names
+\end{itemize}
+
+\textbf{Question 2.5:} The TXID channel encodes data in the DNS transaction ID field (16 bits per query). How many queries are needed to transmit a 10-byte message? Show your calculation.
+
+\textbf{Hint:} Each query has a 16-bit (2-byte) transaction ID.
+
+\subsection{Task 2.5: Testing Another Multi-Packet Channel}
+
+To verify you understand multi-packet encoding, test another channel: TXID (Transaction ID). This channel is more efficient than RD flag because it encodes 2 bytes (16 bits) per query instead of 1 bit.
+
+\textbf{Understanding TXID Channel:}
+\begin{itemize}[noitemsep]
+  \item Each DNS query has a 16-bit Transaction ID field
+  \item TXID channel encodes 2 bytes per query
+  \item Much more efficient than RD flag (16x faster!)
+  \item Example: "Hello" (5 bytes) = only 3 queries needed
+\end{itemize}
+
+\textbf{Steps - Start a new capture (Terminal 1):}
+\begin{enumerate}[noitemsep]
+  \item On DNS-DHCP VM, start capturing with TXID display:
+\begin{lstlisting}[language=bash]
+sudo tshark -i eth1 -f "port 53" -Y "dns.flags.response == 1" \
+       -T fields -e frame.number -e dns.id -e dns.qry.name
+\end{lstlisting}
+\end{enumerate}
+
+\textbf{Steps - Send TXID message (Terminal 2):}
+\begin{enumerate}[noitemsep]
+  \item On Agent VM, send a message using TXID channel:
+\begin{lstlisting}[language=bash]
+python3 main.py --channel txid --data "Test" --mode send
+\end{lstlisting}
+  \item Note how many queries are sent (should be 2 for "Test" = 4 bytes)
+  \item Stop the capture in Terminal 1
+\end{enumerate}
+
+\textbf{Question 2.6:} Based on your capture, record the Transaction ID values you see. How many queries were needed for the 4-byte message "Test"? Does this match your expectation (4 bytes ÷ 2 bytes/query = 2 queries)?
+
+\textbf{Verifying Decoding:} Use the decoder tool to decode the captured TXID values. Convert your HEX TXIDs in the capture into decimal base (https://www.rapidtables.com/convert/number/hex-to-decimal.html). Does it correctly reconstruct the original message "Test"? What TXID (decimal base) values did you use?
+
+\textbf{Question 2.7:} Calculate: If you need to exfiltrate a 100-byte document, how many DNS queries would you need using:
+\begin{itemize}[noitemsep]
+  \item RD flag channel (1 bit per query)?
+  \item TXID channel (16 bits per query)?
+\end{itemize}
+
+Show your calculations and compare the efficiency.
+
+\subsection{Task 2.6: Bonus - Complete Workflow Verification}
+
+\textbf{Optional Challenge:} Complete the full send-capture-decode workflow for one more channel.
+
+\textbf{Steps:}
+\begin{enumerate}[noitemsep]
+  \item Choose a message (2-3 characters)
+  \item Choose a channel: ttl, qtype, or labels
+  \item Start a capture on DNS-DHCP VM (Terminal 1). Check documentation for channel-specific tshark filters.
+  \item Send the message from Agent VM (Terminal 2):
+\begin{lstlisting}[language=bash]
+# Example with labels channel
+python3 main.py --channel labels --data "AB" --mode both
+\end{lstlisting}
+  \item The \texttt{--mode both} will show you what's being sent AND send it
+  \item Verify in your capture that you can see the encoded data
+  \item Use the decoder to decode it back
+\end{enumerate}
+
+\textbf{Question 2.8 (Bonus):} Document your complete workflow:
+\begin{itemize}[noitemsep]
+  \item What message did you send?
+  \item What channel did you use?
+  \item How many packets were required?
+  \item What did the encoded data look like in the capture?
+  \item Did it decode correctly?
+\end{itemize}
+
+\end{document}

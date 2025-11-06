@@ -16,7 +16,7 @@ import dns.flags
 
 # Import covert channel implementations
 from channels import (Base32Channel, HexChannel, XORBase32Channel, TTLChannel, TTLDNSChannel,
-                      QTypeChannel, CaseToggleChannel, LabelCountChannel, TXIDChannel, RDFlagChannel)
+                      QTypeChannel, CaseToggleChannel, LabelCountChannel, TXIDChannel, RDFlagChannel, Base32ChannelExercise)
 from dns_packet_builder import DNSPacketBuilder
 from dns_sender import DNSSender
 
@@ -24,6 +24,7 @@ from dns_sender import DNSSender
 # Available covert channels
 CHANNELS = {
     'base32': Base32Channel,
+    'base32-exercise': Base32ChannelExercise,
     'hex': HexChannel,
     'xor': XORBase32Channel,
     'ttl': TTLChannel,
