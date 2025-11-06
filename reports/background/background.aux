@@ -1,0 +1,32 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\@writefile{toc}{\contentsline {section}{\numberline {1}DNS Covert Channel Techniques}{1}{section.1}\protected@file@percent }
+\newlabel{channels}{{1}{1}{DNS Covert Channel Techniques}{section.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}DNS Packet Structure and Exploitable Fields}{1}{subsection.1.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces DNS packet structure with exploitable fields highlighted. Red-shaded fields can be manipulated to encode covert data: Transaction ID, Flags (RD bit), QNAME (subdomain, labels, case), QTYPE, and TTL (in responses). Colored outlines distinguish the three main sections: blue for Header, green for Question, and gold for Answer. More channels can be built using other header fields, but these are the ones tackled in this lab.}}{1}{figure.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:dns-packet}{{1}{1}{DNS packet structure with exploitable fields highlighted. Red-shaded fields can be manipulated to encode covert data: Transaction ID, Flags (RD bit), QNAME (subdomain, labels, case), QTYPE, and TTL (in responses). Colored outlines distinguish the three main sections: blue for Header, green for Question, and gold for Answer. More channels can be built using other header fields, but these are the ones tackled in this lab}{figure.caption.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.2}Single-Packet Subdomain Encoding Channels}{1}{subsection.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.2.1}Base32 Encoding}{1}{subsubsection.1.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.2.2}Hexadecimal Encoding}{1}{subsubsection.1.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.2.3}XOR + Base32 Encryption}{2}{subsubsection.1.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.3}Multi-Packet Header and Structure-Based Channels}{2}{subsection.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.1}RD Flag (Recursion Desired) Channel}{2}{subsubsection.1.3.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.2}TXID (Transaction ID) Channel}{2}{subsubsection.1.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.3}DNS TTL Channel}{3}{subsubsection.1.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.4}Query Type (QTYPE) Channel}{3}{subsubsection.1.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.5}Label Count Channel}{3}{subsubsection.1.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {1.3.6}Case Toggle Channel}{3}{subsubsection.1.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.4}Multi-Channel Combination}{4}{subsection.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.5}Channel Comparison and Trade-offs}{4}{subsection.1.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces DNS covert channel characteristics}}{4}{table.caption.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Detection, Prevention, and Monitoring}{5}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Detection Techniques}{5}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {2.1.1}Statistical Anomaly Detection}{5}{subsubsection.2.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Prevention Strategies}{5}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Wireshark for DNS Analysis}{6}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Machine Learning for Detection}{6}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Incident Response}{7}{subsection.2.5}\protected@file@percent }
+\gdef \@abspage@last{7}
