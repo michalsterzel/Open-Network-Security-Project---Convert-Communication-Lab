@@ -82,10 +82,15 @@ if %ERRORLEVEL% neq 0 (
 echo DNS Server started successfully!
 
 echo.
-echo Reloading DNS Server to initialize DNS-DHCP services...
-echo Attempting to fix read-only file system issue first...
-vagrant ssh -c "sudo mount -o remount,rw / 2>/dev/null || echo 'Filesystem remount skipped'"
-vagrant reload
+@REM echo Reloading DNS Server to initialize DNS-DHCP services...
+@REM echo Attempting to fix read-only file system issue first...
+@REM vagrant ssh -c "sudo mount -o remount,rw / 2>/dev/null || echo 'Filesystem remount skipped'"
+@REM vagrant reload
+
+echo Restarting networking and DNS services instead of full reload...
+vagrant ssh -c "sudo systemctl restart systemd-networkd && sleep 3 && sudo systemctl restart dnsmasq"
+
+
 if %ERRORLEVEL% neq 0 (
     echo WARNING: Failed to reload DNS Server (this may be normal for some VMs)
     echo Attempting to continue without reload...
