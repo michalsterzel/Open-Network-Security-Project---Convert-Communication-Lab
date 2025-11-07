@@ -1,0 +1,22 @@
+\contentsline {section}{\numberline {1}DNS Covert Channel Techniques}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Single-Packet Subdomain Encoding Channels}{2}{subsection.1.1}%
+\contentsline {subsubsection}{\numberline {1.1.1}Base32 Encoding}{2}{subsubsection.1.1.1}%
+\contentsline {subsubsection}{\numberline {1.1.2}Hexadecimal Encoding}{2}{subsubsection.1.1.2}%
+\contentsline {subsubsection}{\numberline {1.1.3}XOR + Base32 Encryption}{2}{subsubsection.1.1.3}%
+\contentsline {subsection}{\numberline {1.2}Multi-Packet Header and Structure-Based Channels}{3}{subsection.1.2}%
+\contentsline {subsubsection}{\numberline {1.2.1}RD Flag (Recursion Desired) Channel}{3}{subsubsection.1.2.1}%
+\contentsline {subsubsection}{\numberline {1.2.2}TXID (Transaction ID) Channel}{3}{subsubsection.1.2.2}%
+\contentsline {subsubsection}{\numberline {1.2.3}DNS TTL Channel}{3}{subsubsection.1.2.3}%
+\contentsline {subsubsection}{\numberline {1.2.4}Query Type (QTYPE) Channel}{4}{subsubsection.1.2.4}%
+\contentsline {subsubsection}{\numberline {1.2.5}Label Count Channel}{4}{subsubsection.1.2.5}%
+\contentsline {subsubsection}{\numberline {1.2.6}Case Toggle Channel}{4}{subsubsection.1.2.6}%
+\contentsline {subsection}{\numberline {1.3}Multi-Channel Combination}{4}{subsection.1.3}%
+\contentsline {subsection}{\numberline {1.4}Channel Comparison and Trade-offs}{5}{subsection.1.4}%
+\contentsline {section}{\numberline {2}Detection, Prevention, and Monitoring}{6}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Detection Techniques}{6}{subsection.2.1}%
+\contentsline {subsubsection}{\numberline {2.1.1}Statistical Anomaly Detection}{6}{subsubsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.2}Prevention Strategies}{6}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}Wireshark for DNS Analysis}{7}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Machine Learning for Detection}{7}{subsection.2.4}%
+\contentsline {subsection}{\numberline {2.5}Incident Response}{8}{subsection.2.5}%
+\contentsline {subsection}{\numberline {2.6}Defense-in-Depth Summary}{9}{subsection.2.6}%
