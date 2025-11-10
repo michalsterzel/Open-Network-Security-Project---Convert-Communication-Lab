@@ -12,6 +12,7 @@
 \usepackage{amsmath}
 \usepackage{tikz}
 \usepackage{caption}
+\usepackage{float}
 
 \setlength{\parindent}{0pt}
 
@@ -37,6 +38,80 @@
 \large Background: DNS Covert Channels}
 
 \begin{document}
+\maketitle
+
+\begin{abstract}
+This document introduces DNS covert channels: techniques that abuse the Domain Name System (DNS) to hide, tunnel, or exfiltrate data. Before explaining the attack techniques and examples, we introduce the different concepts necessary for the attack to work as well as the attack itself.
+\end{abstract}
+
+
+\section{Motivation \& threat overview}
+A DNS attack is an exploit where a malicious actor takes advantage of vulnerabilities in the Domain Name System (DNS) to disrupt services, redirect users to malicious websites, or gain unauthorized access to an organization's resources. 
+
+This lab will focus on covert channels, a technique used to establish a secret, unauthorized communication link between a compromised system inside a network and an attacker's external server. Attackers exploit the fact that DNS traffic is generally trusted and rarely inspected closely by firewalls and other security measures to hide their malicious activities.
+
+\section{DNS (Domain Name System)}
+\subsection{What is DNS?}
+DNS, or Domain Name System, is the Internet's phone book that translates human-friendly domain names like \texttt{www.google.com} into machine-readable IP addresses (e.g., 172.217.160.142). This allows users to visit websites by typing an easy-to-remember name instead of a long string of numbers, which computers use to locate and connect to each other on a network. 
+
+There are four DNS components involved in resolving a domain name when loading a web page:
+\begin{itemize}[noitemsep]
+  \item \textbf{Root servers:} The root servers are the first step, and the most authoritative, in translating (resolving) human-readable host names into IP addresses. They can be thought of as the library that knows the names of every rack of dictionaries (the top-level delegations).
+  \item \textbf{TLD name servers:} The top-level domain (TLD) servers can be thought of as a specific rack of dictionaries for a TLD (for example, \texttt{.com}). A TLD nameserver is the next step in the search for a specific IP address and knows the authoritative nameservers for second-level domains.
+  \item \textbf{Authoritative servers:} The authoritative nameserver holds the actual records for a domain (for example, \texttt{example.com}) and is responsible for returning the requested IP address or other resource record.
+  \item \textbf{Resolver:} The resolver acts like a librarian who is asked to find the translation in a particular book somewhere in the library. A recursive resolver queries the hierarchy on behalf of the client and returns the final answer.
+\end{itemize}
+
+Below is a representation of the DNS hierarchy:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\linewidth]{images/hierarchy.png}
+    \caption{DNS hierarchy}
+    \label{fig:hierarchy}
+\end{figure}
+
+\subsection{Typical DNS message flow}
+A simplified recursive lookup:
+\begin{enumerate}[noitemsep]
+  \item The client asks its stub resolver (often the OS or local resolver) for \texttt{host.example.com}.
+  \item If the resolver does not have the answer, it queries root servers, then TLD servers, then the authoritative server for \texttt{example.com}.
+  \item The authoritative server responds with the requested record(s).
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{images/trace.png}
+    \caption{DNS resolver route}
+    \label{fig:placeholder}
+\end{figure}
+
+
+\subsection{Common DNS record types}
+DNS records are the entries inside the ``dictionary.'' They record different types of information used by different services:
+\begin{itemize}[noitemsep]
+  \item \textbf{A} IPv4 address
+  \item \textbf{AAAA} IPv6 address
+  \item \textbf{NS} Name server delegation
+  \item \textbf{MX} Mail exchange
+  \item \textbf{TXT} Arbitrary text (commonly abused for data)
+  \item \textbf{CNAME} Canonical name (alias)
+\end{itemize}
+
+
+\section{DHCP (Dynamic Host Configuration Protocol)}
+\subsection{What is DHCP?}
+DHCP automates network configuration of hosts/client. It makes the network aware of a new host and gives the host the configuration needed to communicate: assigning IP addresses, default gateway, DNS servers, and other options.
+
+\subsection{Typical DHCP flow}
+\begin{enumerate}[noitemsep]
+  \item \textbf{DHCPDISCOVER}: Client broadcasts to find DHCP servers.
+  \item \textbf{DHCPOFFER}: Server offers a lease with an IP address and options.
+  \item \textbf{DHCPREQUEST}: Client requests the offered lease.
+  \item \textbf{DHCPACK}: Server acknowledges and finalizes the lease.
+\end{enumerate}
+
+
 \section{Covert Channels vs. Tunneling in DNS}
 
 While both covert channels and tunneling exploit DNS traffic to carry hidden information, they differ in purpose, design, and scale. Understanding this distinction is critical when analyzing DNS-based communication in security monitoring.
