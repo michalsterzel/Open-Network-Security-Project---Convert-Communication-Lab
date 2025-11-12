@@ -13,13 +13,11 @@
 \usepackage{tikz}
 \usepackage{caption}
 \usepackage{float}
-\usepackage{todonotes}
 
 \setlength{\parindent}{0pt}
 
 \definecolor{lightgray}{gray}{0.95}
 \definecolor{codecolor}{rgb}{0.1,0.1,0.4}
-
 
 \lstset{
   backgroundcolor=\color{lightgray},
@@ -43,29 +41,36 @@
 \maketitle
 
 \begin{abstract}
-This document introduces DNS covert channels: techniques that abuse the Domain Name System (DNS) to hide, tunnel, or exfiltrate data. Before explaining the attack techniques and examples, we introduce the different concepts necessary for the attack to work as well as the attack itself.
+This document introduces DNS covert channels: techniques that abuse the Domain Name System (DNS) to hide, tunnel, or exfiltrate data. Before explaining the attack techniques and examples, we introduce the different concepts necessary for the attack to work, as well as the attack itself.
 \end{abstract}
 
+\section{Motivation \& Threat Overview}
+A DNS attack is an exploit in which a malicious actor takes advantage of vulnerabilities in the Domain Name System (DNS) to disrupt services, redirect users to malicious websites, or gain unauthorized access to an organization's resources. 
 
-\section{Motivation \& threat overview}
-A DNS attack is an exploit where a malicious actor takes advantage of vulnerabilities in the Domain Name System (DNS) to disrupt services, redirect users to malicious websites, or gain unauthorized access to an organization's resources. 
+This lab focuses on covert channels a technique used to establish a secret, unauthorized communication link between a compromised system inside a network and an attacker's external server. Attackers exploit the fact that DNS traffic is generally trusted and rarely inspected closely by firewalls or other security measures, allowing them to hide their malicious activities.
 
-This lab will focus on covert channels, a technique used to establish a secret, unauthorized communication link between a compromised system inside a network and an attacker's external server. Attackers exploit the fact that DNS traffic is generally trusted and rarely inspected closely by firewalls and other security measures to hide their malicious activities.
-
-DNS is a very good vector of attack because DNS traffic is ubiquitous and trusted meaning there is usually not a lot of control done but also because it is quite easy to add allows arbitrary data through different means explain bellow.    
-
+DNS is a particularly good vector for this type of attack because DNS traffic is ubiquitous and trusted, meaning it is usually subject to limited inspection. Moreover, it allows arbitrary data to be transmitted through several mechanisms, making it well-suited for covert communication.
 
 \section{DNS (Domain Name System)}
 \subsection{What is DNS?}
-DNS, or Domain Name System, is the Internet's phone book that translates human-friendly domain names like \texttt{www.google.com} into machine-readable IP addresses (e.g., 172.217.160.142). This allows users to visit websites by typing an easy-to-remember name instead of a long string of numbers, which computers use to locate and connect to each other on a network. 
+DNS, or the Domain Name System, is the Internet's phone book. It translates human-friendly domain names like \texttt{www.google.com} into machine-readable IP addresses (e.g., 172.217.160.142). This allows users to visit websites by typing an easy-to-remember name instead of a long string of numbers, which computers use to locate and connect to each other on a network. 
 
-There are four DNS components involved in resolving a domain name when loading a web page:
+There are four main DNS components involved in resolving a domain name when loading a web page:
 \begin{itemize}[noitemsep]
-  \item \textbf{Root servers:} The root servers are the first step, and the most authoritative, in translating (resolving) human-readable host names into IP addresses. They can be thought of as the library that knows the names of every rack of dictionaries (the top-level delegations).
-  \item \textbf{TLD name servers:} The top-level domain (TLD) servers can be thought of as a specific rack of dictionaries for a TLD (for example, \texttt{.com}). A TLD nameserver is the next step in the search for a specific IP address and knows the authoritative nameservers for second-level domains.
-  \item \textbf{Authoritative servers:} The authoritative nameserver holds the actual records for a domain (for example, \texttt{example.com}) and is responsible for returning the requested IP address or other resource record.
-  \item \textbf{Resolver:} The resolver acts like a librarian who is asked to find the translation in a particular book somewhere in the library. A recursive resolver queries the hierarchy on behalf of the client and returns the final answer.
+  \item \textbf{Root servers:} The root servers are the first step, and the most authoritative, in translating (resolving) human-readable host names into IP addresses. They can be thought of as a library that knows the names of every rack of books (the top-level delegations).
+  \item \textbf{TLD name servers:} The top-level domain (TLD) servers can be thought of as a specific rack of books (for example, \texttt{.com}). A TLD nameserver is the next step in the search for a specific IP address and knows the authoritative nameservers for second-level domains.
+  \item \textbf{Authoritative servers:} The authoritative nameserver holds the actual records for a domain (for example, \texttt{example.com}) and is responsible for returning the requested IP address or other resource record. 
+  \item \textbf{Resolver:} The resolver acts like a librarian who is asked to find the translation in a particular book somewhere in the library. 
+  There are two ways the resolver can search for answers:
+  \begin{enumerate}
+      \item \textbf{Recursive query:} The resolver asks a DNS server to find the final answer on its behalf (the resolver asks the library, which asks the rack, which asks the book — the answer then follows the same path back).
+      \item \textbf{Iterative query:} The resolver performs each step itself: it asks the library which rack to choose, then asks the rack which book to use, and finally queries the book for the answer.  
+  \end{enumerate}
 \end{itemize}
+
+\textbf{What about \texttt{hello.world.example.com}?}
+\newline
+As you may know, a URL can contain many fields. In this case, the \texttt{example.com} authoritative servers may be authoritative for the entire \texttt{example.com} zone (able to resolve every subdomain, even \texttt{hello.world.example.com}). Alternatively, the authority for the subdomain may delegate \texttt{world.example.com} to its own zone with its own authoritative servers.
 
 Below is a representation of the DNS hierarchy:
 
@@ -76,47 +81,46 @@ Below is a representation of the DNS hierarchy:
     \label{fig:hierarchy}
 \end{figure}
 
-\subsection{Typical DNS message flow}
-A simplified recursive lookup:
+\subsection{Typical DNS Message Flow}
+A simplified recursive lookup works as follows:
 \begin{enumerate}[noitemsep]
-  \item The client asks its stub resolver (often the OS or local resolver) for \texttt{host.example.com}.
-  \item If the resolver does not have the answer, it queries root servers, then TLD servers, then the authoritative server for \texttt{example.com}.
+  \item The client asks its stub resolver (often the OS or a local resolver) for \texttt{host.example.com}.
+  \item If the resolver does not have the answer, it queries root servers, then TLD servers, and finally the authoritative server for \texttt{example.com}.
   \item The authoritative server responds with the requested record(s).
 \end{enumerate}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\linewidth]{images/trace.png}
-    \caption{DNS resolver route}
+    \caption{DNS iterative resolver route}
     \label{fig:placeholder}
 \end{figure}
 
-
-\subsection{Common DNS record types}
-DNS records are the entries inside the ``dictionary.'' They record different types of information used by different services:
+\subsection{Common DNS Record Types}
+DNS records are the entries inside the ``dictionary.'' They store different types of information used by various services:
 \begin{itemize}[noitemsep]
-  \item \textbf{A} IPv4 address
-  \item \textbf{AAAA} IPv6 address
-  \item \textbf{NS} Name server delegation
-  \item \textbf{MX} Mail exchange
-  \item \textbf{TXT} Arbitrary text (commonly abused for data)
-  \item \textbf{CNAME} Canonical name (alias)
+  \item \textbf{A} — IPv4 address
+  \item \textbf{AAAA} — IPv6 address
+  \item \textbf{NS} — Name server delegation
+  \item \textbf{MX} — Mail exchange
+  \item \textbf{TXT} — Arbitrary text (commonly abused for data)
+  \item \textbf{CNAME} — Canonical name (alias)
 \end{itemize}
+the resolver's goal is to ask for the correct record type to get the desired information ("I'm looking for the information behind the A field").
 
 \section{DHCP (Dynamic Host Configuration Protocol)}
 \subsection{What is DHCP?}
-DHCP automates network configuration of hosts/client. It makes the network aware of a new host and gives the host the configuration needed to communicate: assigning IP addresses, default gateway, DNS servers, and others.
-The DHCP service is responsible for it's own subdomain. It is in control of a range of IP (EX:  [192.168.1.100,192.168.1.200]) However only 1 service should be in control of the incoming host, otherwise the host would be given conflicting information and cause overall network connectivity issues.
+DHCP automates the network configuration of client hosts. It makes the network aware of a new host and provides the necessary configuration for communication: assigning IP addresses, default gateways, DNS servers, and other parameters. 
 
-\subsection{Typical DHCP flow}
+The DHCP service is responsible for its own address pool — it controls a specific range of IP addresses (for example, [192.168.1.100, 192.168.1.200]). However, only one DHCP service should operate on a network segment; otherwise, a host could receive conflicting configuration information, resulting in connectivity issues.
+
+\subsection{Typical DHCP Flow}
 \begin{enumerate}[noitemsep]
-  \item \textbf{DHCPDISCOVER}: Client broadcasts to find DHCP servers.
-  \item \textbf{DHCPOFFER}: Server offers a lease with an IP address and options.
-  \item \textbf{DHCPREQUEST}: Client requests the offered lease.
-  \item \textbf{DHCPACK}: Server acknowledges and finalizes the lease.
+  \item \textbf{DHCPDISCOVER:} The client broadcasts a message to find available DHCP servers.
+  \item \textbf{DHCPOFFER:} A server offers a lease containing an IP address and configuration options.
+  \item \textbf{DHCPREQUEST:} The client requests the offered lease.
+  \item \textbf{DHCPACK:} The server acknowledges and finalizes the lease.
 \end{enumerate}
-
-\subsection{}
 
 \section{Covert Channels vs. Tunneling in DNS}
 
@@ -142,7 +146,7 @@ Data Volume & Very low (bits or bytes per query) & High (can carry full sessions
 \hline
 Structure & Encodes bits within header fields, flags, or label case & Encapsulates entire payloads inside DNS records (A, TXT, NULL) \\
 \hline
-Stealth & High -- mimics legitimate DNS behavior & Lower -- large, repetitive, or high-entropy subdomains are easier to detect \\
+Stealth & High - mimics legitimate DNS behavior & Lower - large, repetitive, or high-entropy subdomains are easier to detect \\
 \hline
 Throughput & Extremely limited & Moderate, limited by query rate and resolver latency \\
 \hline
@@ -278,7 +282,7 @@ Rather than embedding large amounts of data in subdomain labels, these channels 
 
 The RD flag covert channel exploits a single bit in the DNS header that normally indicates whether the client wants recursive resolution. By toggling this flag between queries, an attacker can encode one bit per query: RD flag set represents binary 1, RD flag clear represents binary 0. To transmit a message, the attacker converts it to binary and sends each bit as a separate DNS query with the appropriate RD flag value.
 
-This channel's bandwidth is minimal - just 1 bit per query, requiring 8 queries to transmit a single byte. Encoding the letter ``A'' (0x41 = binary 01000001) requires 8 queries with RD flag values: clear, set, clear, clear, clear, clear, clear, set. A 100-byte message would need 800 separate queries. Despite this inefficiency, the channel offers exceptional stealth because RD flag variation is completely normal in real networks. Some clients request recursion while others don't, making this pattern blend seamlessly with legitimate traffic. The flag is also preserved reliably by recursive resolvers, unlike some header fields that may be modified in transit.
+This channel's bandwidth is minimal - just 1 bit per query, requiring 8 queries to transmit a single byte. Encoding the letter ``A'' (0x41 = binary 01000001) requires 8 queries with RD flag values: clear, set, clear, clear, clear, clear, clear, set. A 100-byte message would need 800 separate queries. Despite this inefficiency, the channel offers exceptional stealth because RD flag variation is completely normal in real networks. Some clients request recursion while others don't, making this pattern blend seamlessly with legitimate traffic. The flag is also preserved reliably by recursive resolvers, unlike some header fields that may be modified in transit. However, when many queries are performed in rapid sequence from a single host, the stealth advantage diminishes significantly - maintaining true stealth requires very low throughput, effectively limiting the channel's practical utility.
 
 \subsubsection{TXID (Transaction ID) Channel}
 
@@ -308,11 +312,11 @@ In practice, using extreme label depths would be highly suspicious, so attackers
 
 The case toggle channel exploits an interesting property of DNS: the protocol is case-insensitive according to RFC specifications, yet the original case of characters is preserved in queries and observable on the network. By varying the case of characters in a domain label, an attacker can encode bits with lowercase representing 0 and uppercase representing 1. This provides approximately 1 bit per alphabetic character, or roughly 1 byte per 8-character label.
 
-The stealth level is exceptionally high because DNS servers treat the queries identically regardless of case, and case variation in domain names appears completely natural. Very few security systems monitor character case in DNS queries, making this one of the most covert channels available. The channel works reliably through all DNS infrastructure since case preservation is standard behavior.
+The stealth level is exceptionally high because DNS servers treat the queries identically regardless of case, and case variation in domain names appears completely natural. The channel works reliably through all DNS infrastructure since case preservation is standard behavior. While case-based encoding is a well-documented covert channel technique in security literature, many legacy and commercial DNS security systems prioritize detecting high-volume anomalies and entropy-based patterns over subtle per-character case variations, making this channel difficult to detect without specialized monitoring.
 
 \subsection{Multi-Channel Combination}
 
-Advanced adversaries sometimes combine multiple covert channels within single DNS queries to maximize data throughput. For example, a query might simultaneously use case toggling in the subdomain label, vary the label count, set a specific TXID value, and manipulate the RD flag. These channels operate independently, so the total bandwidth theoretically equals the sum of individual channel bandwidths.
+Advanced adversaries sometimes combine multiple covert channels within single DNS queries to maximize data throughput. For example, a query might simultaneously use case toggling in the subdomain label, vary the label count, set a specific TXID value, and manipulate the RD flag. When these channels operate independently on separate fields or aspects of the query, the total information capacity equals the sum of individual channel capacities. For instance, if case toggling encodes 8 bits in the subdomain characters, label count encodes 3 bits, TXID encodes 16 bits, and RD flag encodes 1 bit, a single query can theoretically carry 28 bits total. This additive property holds because each encoding mechanism uses a distinct, non-overlapping portion of the DNS packet structure.
 
 However, this approach significantly increases detection risk. Each channel creates its own anomalies - high entropy, unusual patterns, suspicious header values - and when combined, these anomalies compound and become more likely to trigger security alerts. The implementation complexity also increases substantially, as the attacker must carefully coordinate multiple encoding schemes and decode them correctly on the receiving end. Most real-world attacks prefer simpler approaches with adequate bandwidth over complex multi-channel schemes.
 
@@ -357,7 +361,7 @@ The query uniqueness ratio examines what fraction of queries from a host are for
 
 Character frequency analysis detects encoding schemes by their characteristic patterns. Base32-encoded domains contain only lowercase a-z and digits 2-7, completely lacking 0, 1, 8, and 9. Hexadecimal encoding uses only 0-9 and a-f, with no letters beyond f. Normal domains favor vowels and common consonants.
 
-Temporal pattern analysis examines the timing of queries. Sudden query bursts from a single host, perfectly regular intervals such as one query every 100 milliseconds, activity during unusual hours like 3 AM from workstations, or extended periods of continuous querying all suggest automated covert channel activity rather than human-driven legitimate use. NXDOMAIN response rate analysis looks at failed queries: while normal traffic generates NXDOMAIN responses below 5\% of queries, suspicious activity may exceed 50\%. However, not all covert channels produce NXDOMAIN responses - some use legitimate-looking domains that resolve successfully.
+Temporal pattern analysis examines the timing of queries. Sudden query bursts from a single host, perfectly regular intervals such as one query every 100 milliseconds, activity during unusual hours like 3 AM from workstations, or extended periods of continuous querying all suggest automated covert channel activity rather than human-driven legitimate use. However, context matters: legitimate automated workflows such as API polling, monitoring systems, scheduled synchronization tasks, and cloud service health checks also produce regular query patterns and may operate outside business hours. Detection systems must distinguish between authorized automated processes and malicious exfiltration by considering additional factors such as destination reputation, query content characteristics, and whether the traffic originates from expected service accounts versus end-user workstations. NXDOMAIN response rate analysis looks at failed queries: while normal traffic generates NXDOMAIN responses below 5\% of queries, suspicious activity may exceed 50\%. However, not all covert channels produce NXDOMAIN responses - some use legitimate-looking domains that resolve successfully.
 
 The key insight is that single metrics generate false positives when used alone. Effective detection requires combining multiple metrics: flagging traffic that shows high entropy \textit{and} high uniqueness \textit{and} unusual character distribution provides much more reliable identification than any individual indicator.
 
@@ -383,7 +387,7 @@ Machine learning offers automated detection by learning patterns from data rathe
 
 Two main approaches exist. Supervised learning requires labeled datasets with normal and malicious examples, achieving high accuracy but demanding large training sets and potentially missing novel techniques. Unsupervised learning detects anomalies by learning normal traffic patterns without labels, catching novel attacks but producing more false positives.
 
-ML advantages include automation at scale, complex pattern recognition, adaptability through retraining, and novel threat detection. Challenges include obtaining large labeled datasets, managing false positives, computational costs, adversarial evasion, model staleness, explainability difficulties, baseline drift, and cold start issues. Best practice combines rule-based detection for known threats, ML for anomalies, and human analysts providing continuous feedback.
+ML advantages include automation at scale, complex pattern recognition, adaptability through retraining, and novel threat detection. Challenges include obtaining large labeled datasets, managing false positives, computational costs, adversarial evasion, model staleness, explainability difficulties, baseline drift, and cold start issues. A particularly critical challenge is class imbalance: DNS traffic contains millions of legitimate queries but relatively few malicious ones, creating severe imbalance in training data. This imbalance causes models to bias toward predicting the majority class (legitimate traffic), potentially missing rare covert channel instances. Techniques to address this include oversampling malicious examples, undersampling benign traffic, using specialized algorithms like SMOTE (Synthetic Minority Over-sampling Technique), or employing cost-sensitive learning that penalizes false negatives more heavily. Best practice combines rule-based detection for known threats, ML for anomalies, and human analysts providing continuous feedback.
 
 \subsection{Incident Response}
 
@@ -392,4 +396,3 @@ When covert channel activity is detected, response follows three steps. First, p
 Avoid disconnecting entire segments, deleting logs, monitoring without containment, or ignoring issues. Remediation proceeds in phases: immediate actions block C2 domains, remove malware, patch vulnerabilities, and reset credentials; long-term improvements enhance monitoring, strengthen controls, conduct threat hunting, and consider architectural changes.
 
 \end{document}
-
