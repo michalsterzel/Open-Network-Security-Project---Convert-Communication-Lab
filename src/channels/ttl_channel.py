@@ -1,16 +1,7 @@
 """
 TTL (Time-To-Live) Covert Channel Implementation.
 
-This channel encodes data into the TTL field of DNS packets.
-Each byte of data is encoded as a TTL value (1-255).
-
-NOTE: TTL encoding requires sending actual DNS packets with custom TTL values.
-The dnspython library doesn't directly control IP-level TTL, so this channel
-works best when combined with raw socket implementation or when the data is
-small enough to encode in multiple sequential queries.
-
-For this implementation, we'll encode data as TTL values that can be embedded
-in multiple DNS queries (one byte per query).
+This channel encodes data into the TTL field of DNS packets (IP level).
 """
 
 from covert_channel_base import CovertChannel
@@ -146,7 +137,7 @@ class TTLChannel(CovertChannel):
         """Return description of this covert channel."""
         return """TTL (Time-To-Live) Covert Channel
 
-Encodes data into the TTL field of DNS packets.
+Encodes data into the TTL field of DNS packets (IP level).
 Each byte becomes a TTL value (1-255).
 
 Characteristics:

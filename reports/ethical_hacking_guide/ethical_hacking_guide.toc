@@ -1,8 +1,0 @@
-\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
-\contentsline {section}{\numberline {2}Important disclaimer}{2}{section.2}%
-\contentsline {section}{\numberline {3}Prerequisites}{2}{section.3}%
-\contentsline {section}{\numberline {4}Lab setup}{2}{section.4}%
-\contentsline {section}{\numberline {5}VM roles and lab model}{3}{section.5}%
-\contentsline {section}{\numberline {6}Notes on network isolation and safety}{3}{section.6}%
-\contentsline {section}{\numberline {7}Troubleshooting}{4}{section.7}%
-\contentsline {section}{\numberline {8}Further reading}{4}{section.8}%

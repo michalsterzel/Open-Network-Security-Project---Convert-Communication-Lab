@@ -1,6 +1,7 @@
 # DNS Covert Channel Tool
 
 A modular python3 toolkit for creating and sending DNS queries with embedded covert channels. This tool allows you to hide data within DNS queries using various encoding schemes.
+**Note**: In the context of the lab, this code is already installed in your VMs, so no action needed.
 
 ## Features
 
@@ -201,19 +202,6 @@ python3 decode.py --channel base32 --encoded "jbswy3dpeblw64tmmq"
 #### 1. `covert_channel_base.py`
 Abstract base class defining the interface for all covert channels.
 
-```python3
-class CovertChannel(ABC):
-    @abstractmethod
-    def encode(self, data: bytes) -> str:
-        """Encode data into DNS-compatible format"""
-        pass
-
-    @abstractmethod
-    def decode(self, encoded_data: str) -> bytes:
-        """Decode DNS data back to original bytes"""
-        pass
-```
-
 #### 2. `dns_packet_builder.py`
 Builds DNS queries with embedded covert channel data using dnspython3.
 
@@ -222,42 +210,6 @@ Handles query printing and sending with configurable modes (UDP/TCP).
 
 #### 4. `channels/`
 Directory containing covert channel implementations.
-
-### Available Covert Channels
-
-#### Base32Channel (`base32`)
-- Uses Base32 encoding (RFC 4648)
-- DNS-safe characters only (A-Z, 2-7)
-- Good balance of efficiency and compatibility
-- No encryption
-
-#### HexChannel (`hex`)
-- Hexadecimal encoding
-- Simple and human-readable
-- Less efficient than Base32
-- No encryption
-
-#### XORBase32Channel (`xor`)
-- XOR encryption + Base32 encoding
-- Provides basic data confidentiality
-- Configurable encryption key
-- Use `--key` option to specify key
-
-#### TTLChannel (`ttl`)
-- Encodes data into TTL (Time-To-Live) values
-- **Very covert** - TTL is rarely monitored for data exfiltration
-- 1 byte per DNS query (requires multiple queries)
-- **Uses Scapy** for raw socket access to control IP-level TTL
-- **Requires root/sudo** privileges to send packets
-- Proper implementation with actual TTL encoding
-
-**TTL Channel Characteristics:**
-- Each byte → one TTL value (1-255)
-- Example: "Hi" (2 bytes) = 2 queries with TTL=72, TTL=105
-- Can use offset and markers for obfuscation
-- Very slow but extremely covert
-- **Requires Scapy**: `pip install scapy`
-- **Requires sudo**: `sudo python3 main.py --channel ttl ...`
 
 ## Creating a New Covert Channel
 

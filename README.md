@@ -89,3 +89,6 @@ chmod +x test-lab.sh
 ./test-lab.sh                    # Linux/macOS
 .\test-lab.bat                   # Windows
 ```
+
+# Code
+The code for the lab is available in the `src` folder with its relative README.
