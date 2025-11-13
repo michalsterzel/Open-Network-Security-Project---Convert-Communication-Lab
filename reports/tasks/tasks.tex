@@ -30,11 +30,11 @@
 
 \title{\textbf{MICS Open Network Security}\\[0.5em]}
 
-\begin{document}\n
+\begin{document}
 
 \maketitle
 
-\section{Introduction}
+\section*{Introduction}
 
 This document contains practical tasks for the DNS Covert Channels lab. You will act as a detective investigating suspicious DNS traffic from a compromised agent machine. The agent is exfiltrating data through DNS queries using various covert channel techniques.
 
@@ -49,7 +49,7 @@ This document contains practical tasks for the DNS Covert Channels lab. You will
 \end{itemize}
 
 
-\section{Task 1: Familiarizing with the Lab Environment}
+\section{Familiarizing with the Lab Environment}
 \textbf{Estimated time:} 10 - 15 minutes
 
 Before beginning the covert communication analysis, take a few minutes to explore the lab environment and verify that the virtual network is working correctly.
@@ -157,19 +157,19 @@ launch-lab
 
 \subsection{Reflection Questions}
 
-\textbf{Question 1.1:} What IP address is assigned to the DNS Server, and how does the Agent obtain its IP address under normal conditions?
+\textbf{Question 1.7.1:} What IP address is assigned to the DNS Server, and how does the Agent obtain its IP address under normal conditions?
 
-\textbf{Question 1.2:} Which service handles DNS requests on the server?
+\textbf{Question 1.7.2:} Which service handles DNS requests on the server?
 
-\textbf{Question 1.3:} After stopping \texttt{dnsmasq}, how did the Agent's behavior change?
+\textbf{Question 1.7.3:} After stopping \texttt{dnsmasq}, how did the Agent's behavior change?
 
-\textbf{Question 1.4:} What happened when the Agent used the same IP address as the DNS Server?
+\textbf{Question 1.7.4:} What happened when the Agent used the same IP address as the DNS Server?
 
-\textbf{Question 1.5:} Why is it important to experiment with network failures before beginning covert communication analysis?
+\textbf{Question 1.7.5:} Why is it important to experiment with network failures before beginning covert communication analysis?
 
 \newpage
 
-\section{Task 2: Single-Message Subdomain Encoding}
+\section{Single-Message Subdomain Encoding}
 
 \textbf{Estimated time:} 20 minutes
 
@@ -180,14 +180,14 @@ In this task, you will investigate single-packet covert channels where data is e
   \item Most exercises use \textbf{live tshark sessions} for immediate feedback and simpler workflow
   \item We filter captures to show \textbf{only DNS request packets} (dns.flags.response == 0) for cleaner data analysis
   \item This filtering removes DNS response packets, making it easier to focus on the queries being sent
-  \item You can also \textbf{save captures to pcap files} for later analysis or submission (demonstrated in Task 1.4c)
+  \item You can also \textbf{save captures to pcap files} for later analysis or submission
   \item Pcap files can be transferred from the VM to your host machine for archiving or grading
 \end{itemize}
 
 \textbf{Important Note - Using the DNS Covert Channel Tools:}
-This lab provides ready-to-use commands for running the DNS covert channel agent and decoder tool. You will not need to write code from scratch. However, Task 1.6 includes a small coding exercise to help you understand the encoding mechanisms better. The codebase includes a README file with detailed usage instructions for both the agent and decoder tool if you need to reference them during the lab.
+This lab provides ready-to-use commands for running the DNS covert channel agent and decoder tool. You will not need to write code from scratch. However, one task includes a small coding exercise to help you understand the encoding mechanisms better. The codebase includes a README file with detailed usage instructions for both the agent and decoder tool if you need to reference them during the lab.
 
-\subsection{Task 1.1: Understanding Normal DNS Traffic}
+\subsection{Understanding Normal DNS Traffic}
 
 Before investigating covert channels, let's first understand what normal DNS traffic looks like.
 
@@ -226,11 +226,11 @@ nslookup test.example.com
   \item Keep the tshark capture running for the next task
 \end{enumerate}
 
-\textbf{Question 2.1a:} Count how many DNS query lines appeared in your tshark output. How many DNS queries were captured?
+\textbf{Question 2.1.1:} Count how many DNS query lines appeared in your tshark output. How many DNS queries were captured?
 
-\textbf{Question 2.1b:} What do normal DNS subdomains look like? Are they human-readable?
+\textbf{Question 2.1.2:} What do normal DNS subdomains look like? Are they human-readable?
 
-\subsection{Task 1.2: Capturing Covert Channel Traffic}
+\subsection{Capturing Covert Channel Traffic}
 
 Now let's capture traffic from the covert channel agent and compare it to normal DNS.
 
@@ -268,15 +268,15 @@ python3 main.py --channel base32 --data "DNS" --mode send
 \begin{enumerate}[noitemsep]
   \item Observe the covert DNS queries appearing live in Terminal 1
   \item You should see encoded subdomains like "irhfg.example.com" (base32) and hex-encoded strings
-  \item Compare these subdomains to the normal ones from Task 1.1
+  \item Compare these subdomains to the normal ones from Task 2.1
   \item Stop the capture with Ctrl+C when done
 \end{enumerate}
 
-\textbf{Question 2.2a:} What differences do you notice between normal DNS queries and covert channel queries? How do the subdomains look different?
+\textbf{Question 2.2.1:} What differences do you notice between normal DNS queries and covert channel queries? How do the subdomains look different?
 
-\textbf{Question 2.2b:} How many covert DNS query lines appeared in your tshark output?
+\textbf{Question 2.2.2:} How many covert DNS query lines appeared in your tshark output?
 
-\subsection{Task 1.3: Identifying Encoding Types}
+\subsection{Identifying Encoding Types}
 
 DNS covert channels use different encoding schemes. The main ones used in this lab are:
 \begin{itemize}[noitemsep]
@@ -295,9 +295,9 @@ DNS covert channels use different encoding schemes. The main ones used in this l
 \end{itemize}
 
 
-\textbf{Question 2.3a:} Imagine looking at a captured covert traffic where a subdomain starts with "ob4xa". Based on the character set hints above, what encoding do you think this is? List the unique characters you see and explain your reasoning.
+\textbf{Question 2.3.1:} Imagine looking at a captured covert traffic where a subdomain starts with "ob4xa". Based on the character set hints above, what encoding do you think this is? List the unique characters you see and explain your reasoning.
 
-\subsection{Task 1.4: Decoding Covert Messages}
+\subsection{Decoding Covert Messages}
 
 Now that you've identified the encoding types, use the decoder tool to extract the hidden messages.
 
@@ -328,7 +328,7 @@ Decoded 3 bytes
   Bytes: b'DNS'
 \end{lstlisting}
 
-\textbf{Question 2.4a:} Now find and decode the "World" message from your tshark capture. First, extract the hex-encoded subdomain (remove the ".example.com" part), then decode it:
+\textbf{Question 2.4.1:} Now find and decode the "World" message from your tshark capture. First, extract the hex-encoded subdomain (remove the ".example.com" part), then decode it:
 \begin{lstlisting}[language=bash]
 python3 decode.py --channel hex \
         --encoded "YOUR_HEX_SUBDOMAIN_HERE"
@@ -336,9 +336,9 @@ python3 decode.py --channel hex \
 
 What is the decoded message? Paste both the encoded subdomain and decoded result.
 
-\textbf{Question 2.4b:} Decode the "Hello" message. Extract the base32 subdomain from your tshark capture and decode it. What subdomain did you find, and what did it decode to?
+\textbf{Question 2.4.2:} Decode the "Hello" message. Extract the base32 subdomain from your tshark capture and decode it. What subdomain did you find, and what did it decode to?
 
-\subsection{Task 1.4c: Saving Captures to Pcap Files (For Submission)}
+\subsection{Saving Captures to Pcap Files (For Submission)}
 
 While live captures are convenient for analysis, you may need to save traffic to a file for submission or later review. This task demonstrates how to capture to a pcap file and transfer it to your host machine.
 
@@ -398,19 +398,19 @@ ls -l covert_evidence.pcap
   \item You can now open it with Wireshark, submit it, or analyze it further
 \end{enumerate}
 
-\textbf{Question 2.4c:} Create a pcap file capturing your own covert messages. Save it as \texttt{task1\_submission.pcap} and transfer it to your host machine. How many DNS query packets (requests only) are in your file? Use this command to count:
+\textbf{Question 2.5.1:} Create a pcap file capturing your own covert messages. Save it as \texttt{task\_submission.pcap} and transfer it to your host machine. How many DNS query packets (requests only) are in your file? Use this command to count:
 \begin{lstlisting}[language=bash]
-sudo tshark -r /tmp/task1_submission.pcap \
+sudo tshark -r /tmp/task_submission.pcap \
        -Y "dns.flags.response == 0" | wc -l
 \end{lstlisting}
 
 \textbf{Note:} Keep this file for your lab submission. Include both the pcap file and the decoded messages in your report.
 
-\subsection{Task 1.5: Generating Encoded Messages}
+\subsection{Generating Encoded Messages}
 
 Now that you understand how to decode messages, let's learn how to generate encoded messages without sending them.
 
-\textbf{Question 2.5a:} You need to exfiltrate the message "SecretData" using base32 encoding. What would the subdomain look like?
+\textbf{Question 2.6.1:} You need to exfiltrate the message "SecretData" using base32 encoding. What would the subdomain look like?
 
 \textbf{Option 1 - Use the agent in print mode (doesn't send):}
 \begin{lstlisting}[language=bash]
@@ -428,14 +428,14 @@ sudo tshark -i eth1 -f "port 53" \
 \end{lstlisting}
   \item Send the message from Agent VM:
 \begin{lstlisting}[language=bash]
-python3 main.py --channel base32 --data "SecretData" --mode send
+python3 main.py --channel base32 --data "CovertBase" --mode send
 \end{lstlisting}
   \item Observe the subdomain in the tshark output
 \end{enumerate}
 
-\textbf{Question 2.5b:} What is the base32-encoded subdomain for "SecretData"? Verify by decoding it - does it decode back correctly?
+\textbf{Question 2.6.2:} What is the base32-encoded subdomain for "CovertBase"? Verify by decoding it - does it decode back correctly?
 
-\subsection{Task 1.6: Code Completion Exercise}
+\subsection{Code Completion Exercise}
 
 The agent includes a training exercise to help you understand encoding. You'll complete a simple base32 encoding function.
 
@@ -459,13 +459,13 @@ python3 main.py --channel base32-exercise \
 
 You should see complete and encrypt the message correctly.
 
-\textbf{Question 2.6a:} If you encode the same message, with "base32" instead of "base32-exercise", what subdomain do you get? Does it match your implementation?
+\textbf{Question 2.7.1:} If you encode the same message, with "base32" instead of "base32-exercise", what subdomain do you get? Does it match your implementation?
 
-\textbf{Question 2.6b:} After completing the function successfully, encode the message "Covert" using your function. What is the encoded output?
+\textbf{Question 2.7.2:} After completing the function successfully, encode the message "Covert" using your function. What is the encoded output?
 
-\textbf{Question 2.6c:} Verify your encoded "Covert" message by decoding it with the decoder tool. Does it decode back to "Covert" correctly? You can use mode \texttt{print} to avoid sending and just see the encoded output.
+\textbf{Question 2.7.3:} Verify your encoded "Covert" message by decoding it with the decoder tool. Does it decode back to "Covert" correctly? You can use mode \texttt{print} to avoid sending and just see the encoded output.
 
-\subsection{Task 1.7 (Bonus): XOR Encryption Layer}
+\subsection{XOR Encryption Layer (Bonus)}
 
 \textbf{Optional Challenge:} For advanced obfuscation, the lab includes an XOR-encrypted base32 channel that adds an encryption layer on top of base32 encoding. This makes the message much harder to decode without knowing the encryption key.
 
@@ -502,23 +502,23 @@ python3 decode.py --channel xor --encoded "SUBDOMAIN_HERE" \
 
 Now you should see "Hidden" correctly decoded.
 
-\textbf{Question 2.7 (Bonus):}
-\begin{enumerate}[label=\alph*), noitemsep]
-  \item Send a message using XOR encryption with your own secret key. What subdomain is generated?
-  \item Try to decode it without the key using base32. What do you see?
-  \item Decode it with the correct key. Does it work?
-  \item Why is XOR encryption useful for covert channels? What additional security does it provide?
-\end{enumerate}
+\textbf{Question 2.8.1 (Bonus):} Send a message using XOR encryption with your own secret key. What subdomain is generated? Specify also the key
+
+\textbf{Question 2.8.2 (Bonus):} Try to decode it without the key using base32. What do you see?
+
+\textbf{Question 2.8.3 (Bonus):} Decode it with the correct key. Does it work?
+
+\textbf{Question 2.8.4 (Bonus):} Why is XOR encryption useful for covert channels? What additional security does it provide?
 
 \newpage
 
-\section{Task 3: Multi-Packet Covert Channels}
+\section{Multi-Packet Covert Channels}
 
 \textbf{Estimated time:} 20 minutes
 
 Multi-packet covert channels encode data across multiple DNS queries by manipulating DNS header fields or query characteristics. In this task, you'll investigate channels that require multiple packets to transmit a single message.
 
-\subsection{Task 2.1: Understanding the RD Flag Channel}
+\subsection{Understanding the RD Flag Channel}
 
 The Recursion Desired (RD) flag channel encodes data by toggling the RD flag bit in DNS query headers. This is extremely covert as RD flag variation appears normal.
 
@@ -543,11 +543,11 @@ RD flag & Clear & Set & Clear & Clear & Set & Clear & Clear & Clear \\
 \end{tabular}
 \end{center}
 
-\textbf{Question 3.1:} How many DNS queries are needed to transmit the 2-byte message "Hi"? Show your calculation.
+\textbf{Question 3.1.1:} How many DNS queries are needed to transmit the 2-byte message "Hi"? Show your calculation.
 
-\textbf{Question 3.2:} If you observe 64 DNS queries with varying RD flags, how many bytes of data were transmitted?
+\textbf{Question 3.1.2:} If you observe 64 DNS queries with varying RD flags, how many bytes of data were transmitted?
 
-\subsection{Task 2.2: Sending and Capturing RD Flag Messages}
+\subsection{Sending and Capturing RD Flag Messages}
 
 Now you'll send messages using the RD flag channel and capture them to see how multi-packet encoding works.
 
@@ -582,9 +582,9 @@ python3 main.py --channel rd --data "OK" --mode send
   \item Stop the capture with Ctrl+C
 \end{enumerate}
 
-\textbf{Question 3.3:} Looking at your tshark output, record the sequence of RD flag values for the "Hi" message (should be 16 values: 8 bits for 'H' + 8 bits for 'i'). Write them as comma-separated values.
+\textbf{Question 3.2.1:} Looking at your tshark output, record the sequence of RD flag values for the "OK" message (should be 16 values: 8 bits for 'O' + 8 bits for 'K'). Write them as comma-separated values.
 
-\subsection{Task 2.3: Decoding Your Multi-Packet Messages}
+\subsection{Decoding Your Multi-Packet Messages}
 
 The decoder tool can decode RD flag sequences back to the original message. Let's verify the messages you sent.
 
@@ -615,16 +615,16 @@ Decoded 2 bytes
   Bytes: b'Hi'
 \end{lstlisting}
 
-\textbf{Question 3.4:} Now decode the "OK" message using the RD flag sequence you captured. Paste the RD sequence you use and confirm it decodes correctly to "OK".
+\textbf{Question 3.3.1:} Now decode the "OK" message using the RD flag sequence you captured. Paste the RD sequence you use and confirm it decodes correctly to "OK".
 
-\textbf{Question 3.4b:} For verification, manually decode this RD flag sequence. What message was transmitted?
+\textbf{Question 3.3.2:} For verification, manually decode this RD flag sequence. What message was transmitted?
 \begin{lstlisting}
 RD:0,1,0,0,0,0,0,1
 \end{lstlisting}
 
 \textbf{Hint:} This is an 8-bit (1-byte) message. What ASCII character is 01000001 in binary?
 
-\subsection{Task 2.4: Other Multi-Packet Channels}
+\subsection{Other Multi-Packet Channels}
 
 The lab includes several other multi-packet covert channels. Explore them using the decoder's help:
 
@@ -641,11 +641,11 @@ python3 decode.py --help
   \item \textbf{case}: Encodes data in case variations of domain names
 \end{itemize}
 
-\textbf{Question 3.5:} The TXID channel encodes data in the DNS transaction ID field (16 bits per query). How many queries are needed to transmit a 10-byte message? Show your calculation.
+\textbf{Question 3.4.1:} The TXID channel encodes data in the DNS transaction ID field (16 bits per query). How many queries are needed to transmit a 10-byte message? Show your calculation.
 
 \textbf{Hint:} Each query has a 16-bit (2-byte) transaction ID.
 
-\subsection{Task 2.5: Testing Another Multi-Packet Channel}
+\subsection{Testing Another Multi-Packet Channel}
 
 To verify you understand multi-packet encoding, test another channel: TXID (Transaction ID). This channel is more efficient than RD flag because it encodes 2 bytes (16 bits) per query instead of 1 bit.
 
@@ -676,11 +676,11 @@ python3 main.py --channel txid --data "Test" --mode send
   \item Stop the capture in Terminal 1
 \end{enumerate}
 
-\textbf{Question 3.6:} Based on your capture, record the Transaction ID values you see. How many queries were needed for the 4-byte message "Test"? Does this match your expectation (4 bytes ÷ 2 bytes/query = 2 queries)?
+\textbf{Question 3.5.1:} Based on your capture, record the Transaction ID values you see. How many queries were needed for the 4-byte message "Test"? Does this match your expectation (4 bytes ÷ 2 bytes/query = 2 queries)?
 
 \textbf{Verifying Decoding:} Use the decoder tool to decode the captured TXID values. Convert your HEX TXIDs in the capture into decimal base (https://www.rapidtables.com/convert/number/hex-to-decimal.html). Does it correctly reconstruct the original message "Test"? What TXID (decimal base) values did you use?
 
-\textbf{Question 3.7:} Calculate: If you need to exfiltrate a 100-byte document, how many DNS queries would you need using:
+\textbf{Question 3.5.2:} Calculate: If you need to exfiltrate a 100-byte document, how many DNS queries would you need using:
 \begin{itemize}[noitemsep]
   \item RD flag channel (1 bit per query)?
   \item TXID channel (16 bits per query)?
@@ -688,7 +688,7 @@ python3 main.py --channel txid --data "Test" --mode send
 
 Show your calculations and compare the efficiency.
 
-\subsection{Task 2.6: Bonus - Complete Workflow Verification}
+\subsection{Complete Workflow Verification (Bonus)}
 
 \textbf{Optional Challenge:} Complete the full send-capture-decode workflow for one more channel.
 
@@ -707,7 +707,7 @@ python3 main.py --channel labels --data "AB" --mode both
   \item Use the decoder to decode it back
 \end{enumerate}
 
-\textbf{Question 3.8 (Bonus):} Document your complete workflow:
+\textbf{Question 3.6.1 (Bonus):} Document your complete workflow:
 \begin{itemize}[noitemsep]
   \item What message did you send?
   \item What channel did you use?
